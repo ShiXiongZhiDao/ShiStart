@@ -1,0 +1,484 @@
+/* 设计令牌层：颜色 / 间距 / 字号 / 字重 / 圆角 / 阴影 / 动效。
+   所有组件样式只允许引用这里的变量，不允许再出现裸数值。
+
+   主题 = 配色 × 明暗，四套组合各一块：
+     :root                       = warm 的基准块（没有 data-theme 时的兜底）
+     [data-theme='warm-dark']   暖陶晨光 · 深色
+     [data-theme='youth-light'] 青柠夏夜 · 浅色（青柠汽水，既有约定）
+     [data-theme='youth-dark']  青柠夏夜 · 深色（夏夜萤火，既有约定）
+   默认配色 = 青柠夏夜：index.html 预置 youth-light 打底，
+   存储读完后由 useSettings 校正。配色拥有色相/品牌/圆角/背景光；明暗只做亮度反转。
+   全部文字/背景配对按 WCAG AA 验过（计算过程记在各 既有约定）。 */
+
+:root {
+  /* ---------- 间距：4px 基准 ---------- */
+  --sp-1: 2px;
+  --sp-2: 4px;
+  --sp-3: 6px;
+  --sp-4: 8px;
+  --sp-5: 10px;
+  --sp-6: 12px;
+  --sp-7: 16px;
+  --sp-8: 20px;
+  --sp-9: 24px;
+  --sp-10: 32px;
+
+  /* ---------- 字号 ---------- */
+  --fs-2xs: 10px;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 14px;
+  --fs-xl: 15px;
+  --fs-2xl: 17px;
+  --fs-3xl: 20px;
+
+  /* ---------- 字重：只保留三档 ---------- */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  /* ---------- 圆角：整体比旧板大一级，取"揉过的纸边"感 ---------- */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+  --radius-pill: 999px;
+
+  /* ---------- 阴影：两级常态 + 一级悬停。
+       色调跟着主色走暖（褐而不是蓝）—— 冷投影配暖底色会显脏。
+       几何四套主题完全一致，只有**墨色**随主题走。拆成两个令牌是为了切主题时
+       阴影也能跟着淡过去：一整个 `0 1px 2px rgba(…)` 是字面量，插值不了。 ---------- */
+  --shadow-1-ink: rgba(122, 84, 48, 0.07);
+  --shadow-2-ink: rgba(122, 84, 48, 0.1);
+  --shadow-3-ink: rgba(122, 84, 48, 0.13);
+  --shadow-1: 0 1px 2px var(--shadow-1-ink);
+  --shadow-2: 0 4px 14px var(--shadow-2-ink);
+  --shadow-3: 0 10px 24px var(--shadow-3-ink);
+
+  /* ---------- 动效 ---------- */
+  --dur-fast: 120ms;
+  --dur-base: 160ms;
+  --dur-slow: 240ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---------- 中性色梯度（浅色，暖） ---------- */
+  --bg: #faf5ec;
+  --surface: #fffdf8;
+  --surface-2: #f4eddf;
+  --surface-3: #ede3cf;
+  --text: #2e2a22;
+  --text-2: #6a5f4e;
+  --text-3: #746a55;
+  --line: #e9dcc6;
+  --line-strong: #cdbb9b;
+
+  /* ---------- 强调色梯度（浅色，陶土橘） ---------- */
+  --accent: #b05628;
+  --accent-hover: #96441f;
+  --accent-soft: #f7e7d6;
+  --accent-text: #9c4a22;
+
+  /* ---------- 语义色 ---------- */
+  --danger: #b03a30;
+  --danger-soft: #fae8e2;
+  /* 实心按钮上的墨色（既有约定 公共弹窗壳）。
+     **浅色主题配白、深色主题配深底** —— 反着来不及格：浅色配深字只有 2.86 / 2.98，
+     深色配白字只有 2.27 / 2.44（实测见 F:/temp/aa-on-tokens.py，脚本随附数值）。
+     下面每个主题块各写一份，四套都必须有 —— 缺一份的后果是那一套按钮墨色
+     "继承"到错误值，而实心按钮本身照样显示，看不出来。 */
+  --on-accent: #fffdf8; /* 4.909 */
+  --on-danger: #fffdf8; /* 5.912 */
+  /* 模态背板与投影（既有约定 的主页第一个模态）。深色下换成更黑的薄纱。 */
+  --overlay: rgba(60, 42, 24, 0.42);
+  --shadow-modal-ink: rgba(84, 58, 32, 0.24);
+  --shadow-modal: 0 24px 60px var(--shadow-modal-ink);
+
+  /* 语义别名（组件层用这些） */
+  --muted: var(--text-3);
+  /* 占位符文字色：把最弱文字兑向所在底色（--surface）—— 占位符是文字，
+     按 WCAG 1.4.3 的 4.5:1 管。93% 是四主题都还达标的**最浅**一档
+     （暖陶浅色绑定，实测 4.536；再浅就要写偏差：87% → 4.0，81% → 3.5）。 */
+  --placeholder: color-mix(in srgb, var(--text-3) 93%, var(--surface));
+  --card: rgba(255, 253, 248, 0.88);
+  --card-hover: #fffdf8;
+  --chip: rgba(255, 253, 248, 0.62);
+  --sidebar: #f3ecde;
+  --scrollbar-thumb: rgba(122, 108, 85, 0.35);
+  --scrollbar-thumb-hover: rgba(122, 108, 85, 0.6);
+  --focus-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+
+  /* 品牌标识（既有约定 起 token 化）。**既有约定 起品牌色恒定，不再随主题换**：
+     底色四套主题统一为品牌绿 #0a8049，符号统一为纯白 —— 与工具栏图标、
+     README、商店页是同一个标识，颜色不能因用户换了主题就变成另一个品牌。
+     （这是对 既有约定「四套主题各给各的」的修订：那条给的是"标识跟着主题走"，
+      品牌定稿后改为"品牌恒定、界面随主题"。）
+     渐变两端仍保留（同色 = 纯色），切主题时依然平滑过渡。
+     旧的 --brand-page / --brand-stroke 随旧图形一并作废。 */
+  --brand-from: #0a8049;
+  --brand-to: #0a8049;
+  --brand-gradient: linear-gradient(140deg, var(--brand-from), var(--brand-to));
+  --brand-mark-color: #ffffff;
+
+  /* accent 填充面（主按钮 / 激活导航 / 拖拽落点标签）上的文字色。
+     浅色主题白字，深色主题深字 —— youth-dark 的亮柠主色必须配深字（既有约定 决策二）。 */
+  --accent-on: #ffffff;
+
+  /* 页面顶部那一小片暖光（body 用）。纯 CSS 渐变，不发请求、不引外部资源。
+     深色版更淡，只留一点氛围。几何在配色那一档定（暖陶与青柠的位置不同），
+     明暗之间只换**墨色** —— 墨色可插值，切明暗时这片光跟着淡。 */
+  --bg-glow-ink: rgba(194, 120, 66, 0.1);
+  --bg-glow: radial-gradient(1100px 420px at 72% -80px, var(--bg-glow-ink), transparent);
+
+  /* ---------- 背景图案 ----------
+     三档纸纹，墨色跟 --accent 走（换配方自动换色相）。浓度（下面的百分比）是
+     **解算出来的 AA 上限**，不是拍脑袋：以各主题最弱文字（--text-3）正落在
+     墨色上的最坏情况 ≥ 4.6 为约束解出的，过程与全表在 既有约定 验证节。
+     用户不可调 —— 可调等于给一个亲手破坏 AA 的机会。图案规则在 style.css 的
+     html[data-pattern] 上；设置页不引 style.css，天然不铺。 */
+  /* 每行最多几个书签卡片 / 文件夹瓦片。
+     ⚠️ 与 types/settings.ts 的 CARDS_PER_ROW_DEFAULT 必须一致 —— 改一处要改两处
+     （与 THEME_BG 同一个规矩）。运行时由 useSettings 按用户设置覆盖。 */
+  --cards-per-row: 6;
+
+  /* 主页内容区的面宽与左右内边距。设置页要"量出实际每行几列"也得用这两个数
+     （量尺铺到 `--content-max` 那么宽、再减掉侧边栏与内边距），所以收成令牌，
+     不在两处各写一个 1620 / 24。 */
+  --content-max: 1620px;
+  --content-pad-x: 24px;
+
+  --pattern-ink: color-mix(in srgb, var(--accent) 4.5%, transparent);
+  --bg-dots: radial-gradient(circle, var(--pattern-ink) 1px, transparent 1.4px);
+  --bg-checker: linear-gradient(45deg, var(--pattern-ink) 25%, transparent 25%, transparent 75%, var(--pattern-ink) 75%), linear-gradient(45deg, var(--pattern-ink) 25%, transparent 25%, transparent 75%, var(--pattern-ink) 75%);
+  --bg-grid: linear-gradient(var(--pattern-ink) 1px, transparent 1px), linear-gradient(90deg, var(--pattern-ink) 1px, transparent 1px);
+
+  /* 侧边栏同款图案：侧边栏底色（--sidebar）与主区底色（--bg）
+     不是同一个亮度，浓度按侧边栏底座**单独解算**（最弱文字 --text-3 正落在
+     墨色上，四主题全表见 既有约定）。共用一个浓度就得按最弱底座拉平，
+     把主区已经解好的强度白降一档 —— 侧边栏自己解、主区不动。
+     几何与主区三件套一致（渐变形状照抄），只有墨色浓度不同。 */
+  --pattern-ink-sidebar: color-mix(in srgb, var(--accent) 0.7%, transparent);
+  --bg-dots-sidebar: radial-gradient(circle, var(--pattern-ink-sidebar) 1px, transparent 1.4px);
+  --bg-checker-sidebar: linear-gradient(45deg, var(--pattern-ink-sidebar) 25%, transparent 25%, transparent 75%, var(--pattern-ink-sidebar) 75%), linear-gradient(45deg, var(--pattern-ink-sidebar) 25%, transparent 25%, transparent 75%, var(--pattern-ink-sidebar) 75%);
+  --bg-grid-sidebar: linear-gradient(var(--pattern-ink-sidebar) 1px, transparent 1px), linear-gradient(90deg, var(--pattern-ink-sidebar) 1px, transparent 1px);
+
+  color-scheme: light;
+}
+
+/* 暖陶晨光 · 深色（data-theme = 配色-明暗，四套组合各一块，既有约定）。 */
+[data-theme='warm-dark'] {
+  /* 深色不是"把浅色反过来"，是夜里留一盏暖灯：底色偏褐不偏蓝。 */
+  --bg: #171310;
+  --surface: #211b15;
+  --surface-2: #1c1712;
+  --surface-3: #2c251c;
+  --text: #f3ede1;
+  --text-2: #c9bda9;
+  --text-3: #a1927c;
+  --line: #3b3227;
+  --line-strong: #4e4433;
+
+  --accent: #e39a6b;
+  --accent-hover: #efaf82;
+  --accent-soft: #3a2a1d;
+  --accent-text: #efb183;
+
+  --danger: #e58a7e;
+  --danger-soft: #3d2620;
+  --on-accent: #171310; /* 8.004 */
+  --on-danger: #171310; /* 7.272 */
+  --overlay: rgba(4, 2, 0, 0.62);
+  --shadow-modal-ink: rgba(0, 0, 0, 0.5);
+
+  --muted: var(--text-3);
+  --card: #211b15;
+  --card-hover: #2a231b;
+  --chip: rgba(33, 27, 21, 0.75);
+  --sidebar: #100d0a;
+  --scrollbar-thumb: rgba(196, 189, 169, 0.28);
+  --scrollbar-thumb-hover: rgba(196, 189, 169, 0.5);
+
+  /* 只换墨色：阴影的几何与拼法在 :root 里。 */
+  --shadow-1-ink: rgba(0, 0, 0, 0.3);
+  --shadow-2-ink: rgba(0, 0, 0, 0.35);
+  --shadow-3-ink: rgba(0, 0, 0, 0.45);
+
+  /* 暖陶的暖光位置与浅色一致，只换墨色。 */
+  --bg-glow-ink: rgba(227, 154, 107, 0.07);
+
+  /* 深色主色是亮陶土 —— 填充面上要配深字而不是白字（见 --accent-on 的说明）。 */
+  --accent-on: #1a120c;
+  --brand-mark-color: #ffffff;
+
+  /* 背景图案墨色：本主题解算出的 AA 上限浓度。 */
+  --pattern-ink: color-mix(in srgb, var(--accent) 15%, transparent);
+  /* 侧边栏墨色：侧边栏底座更深，15% 时最坏 5.055，主区浓度即可沿用。 */
+  --pattern-ink-sidebar: color-mix(in srgb, var(--accent) 15%, transparent);
+
+  color-scheme: dark;
+}
+
+/* ================= 青柠夏夜 · 浅色（既有约定 建 / 既有约定 重设计） =================
+ *
+ * v1是淡紫底 + 电光紫 + 双层极光 + ✦ 星星 —— 用户原话："AI 味太重"。
+ * 那一套正是 AI 创业落地页的标配脸（Linear/Vercel 系冷紫青渐变 glow）。
+ * 问题不在鲜艳，在**色相故事选错了**：冷紫青讲的是"科技"，不是"青春"。
+ *
+ * v2 = **青柠汽水**：青绿 + 奶油白 + 右上角一颗暖黄的"太阳"。夏天、操场、
+ * 汽水味 —— 与 AI 脸彻底切割。三条硬规则：
+ *   ① 不要极光 / 多层渐变 glow（那是 AI hero section 的签名）；
+ *   ② 主色用有色相倾向的**深青绿**而不是中性亮绿（白字按钮要过 AA）；
+ *   ③ 图标不用 ✦ sparkles（魔法星星是 AI 生成图标的脸），用叶子。
+ *
+ * 既有约定 起主题 = 配色 × 明暗，这一块是 youth-light；youth-dark 在下一块。
+ *
+ * 全部配对按 WCAG AA 脚本验过：正文 13.9 / 次级 6.6 / 三级 ≥4.69 /
+ * 白字配主色 5.0 / 主色作文字 4.7 / 危险文字 ≥4.66。
+ */
+[data-theme='youth-light'] {
+  --bg: #f3f9f1;
+  --surface: #ffffff;
+  --surface-2: #ebf4e9;
+  --surface-3: #dfeddc;
+  --text: #1c2b20;
+  --text-2: #4a5d4f;
+  --text-3: #596b5d;
+  --line: #d8e8d4;
+  --line-strong: #b9d2b2;
+
+  --accent: #0a8049;
+  --accent-hover: #086d3d;
+  --accent-soft: #e2f5e8;
+  --accent-text: #0a7a47;
+
+  --danger: #c43426;
+  --danger-soft: #fceae4;
+  --on-accent: #ffffff; /* 5.004 */
+  --on-danger: #ffffff; /* 5.431 */
+  --overlay: rgba(16, 40, 26, 0.4);
+  --shadow-modal-ink: rgba(16, 72, 44, 0.24);
+
+  --muted: var(--text-3);
+  --card: rgba(255, 255, 255, 0.9);
+  --card-hover: #ffffff;
+  --chip: rgba(255, 255, 255, 0.62);
+  --sidebar: #e9f4e5;
+  --scrollbar-thumb: rgba(90, 112, 96, 0.35);
+  --scrollbar-thumb-hover: rgba(90, 112, 96, 0.6);
+  --focus-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+
+  /* 品牌色恒定：与 :root 同色，这里不再另给一套。 */
+  --brand-from: #0a8049;
+  --brand-to: #0a8049;
+
+  /* 右上角一颗暖阳（柠檬黄）。**只有一层** —— 多层渐变 glow 是 AI 脸的签名，
+     单层暖阳讲的是"夏天下午"。青柠档的光位与暖陶不同，所以几何写在这里；
+     明暗之间只换墨色（--bg-glow-ink，深色版在下一块）。 */
+  --bg-glow-ink: rgba(255, 199, 64, 0.18);
+  --bg-glow: radial-gradient(900px 360px at 85% -60px, var(--bg-glow-ink), transparent);
+
+  /* 背景图案墨色：本主题解算出的 AA 上限浓度。 */
+  --pattern-ink: color-mix(in srgb, var(--accent) 10.5%, transparent);
+  /* 侧边栏墨色：侧边栏底座只能容 7.3%（主区可到 11.1%），单独解。 */
+  --pattern-ink-sidebar: color-mix(in srgb, var(--accent) 7.3%, transparent);
+
+  /* 圆角整体再 +2：青春一档要更"泡泡"一点。只在本主题内生效。 */
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+
+  /* 阴影带绿调：与暖陶晨光的褐调同一个理由 —— 投影要跟着底色走。
+     只换墨色，几何与拼法在 :root 里。 */
+  --shadow-1-ink: rgba(16, 84, 50, 0.08);
+  --shadow-2-ink: rgba(16, 84, 50, 0.11);
+  --shadow-3-ink: rgba(16, 84, 50, 0.14);
+
+  color-scheme: light;
+}
+
+/* ================= 青柠夏夜 · 深色（既有约定，本文新设计） =================
+ *
+ * youth-light 是"夏天午后的汽水"；dark 版不是把它调暗，是同一个色相故事的
+ * 另一个时刻：**夏夜萤火** —— 深绿炭底上一点亮柠。
+ *
+ * 亮度是镜像的：浅色主题"深底白字"，深色主题"亮底深字"。主色用亮柠 #4ed699
+ * 而不是深青绿，所以填充面上必须配深字（--accent-on: #0c1b10）。
+ *
+ * 全部配对按 WCAG AA 脚本验过，第一轮即全过：正文 16.5 / 次级 11.0 /
+ * 三级 ≥6.03 / 深字配主色 9.7 / 主色作文字 11.8 / 危险文字 ≥5.98。
+ */
+[data-theme='youth-dark'] {
+  --bg: #0f1611;
+  --surface: #172016;
+  --surface-2: #131b13;
+  --surface-3: #1f2b1f;
+  --text: #edf5ec;
+  --text-2: #b9cdbb;
+  --text-3: #93ac96;
+  --line: #2a3a2a;
+  --line-strong: #3a4e3a;
+
+  --accent: #4ed699;
+  --accent-hover: #6fe0ab;
+  --accent-soft: #1e3324;
+  --accent-text: #7ce3ac;
+
+  --danger: #f08a7a;
+  --danger-soft: #3a2320;
+  --on-accent: #0f1611; /* 9.975 */
+  --on-danger: #0f1611; /* 7.542 */
+  --overlay: rgba(4, 10, 6, 0.62);
+  --shadow-modal-ink: rgba(0, 0, 0, 0.5);
+
+  --muted: var(--text-3);
+  --card: #172016;
+  --card-hover: #1e2b1e;
+  --chip: rgba(23, 32, 22, 0.75);
+  --sidebar: #0a110a;
+  --scrollbar-thumb: rgba(147, 172, 150, 0.28);
+  --scrollbar-thumb-hover: rgba(147, 172, 150, 0.5);
+  --focus-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+
+  /* 品牌色恒定：深色模式也是同一块品牌绿，配白符号
+     （旧版是亮渐变配深形，那是旧图形的三色画法，已作废）。 */
+  --brand-from: #0a8049;
+  --brand-to: #0a8049;
+  --brand-mark-color: #ffffff;
+
+  /* 萤火：与浅色版的暖阳同一个位置、同一个理由（单层，不要多层 glow）。
+     几何沿用 youth-light 的那条（同一个配色），只换墨色。 */
+  --bg-glow-ink: rgba(78, 214, 153, 0.1);
+
+  /* 圆角与 youth-light 一致：圆角属于配色的性格，不随明暗变。 */
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+
+  /* 只换墨色：几何与拼法在 :root 里。 */
+  --shadow-1-ink: rgba(0, 0, 0, 0.3);
+  --shadow-2-ink: rgba(0, 0, 0, 0.35);
+  --shadow-3-ink: rgba(0, 0, 0, 0.45);
+
+  /* 亮柠主色 → 填充面上配深字。 */
+  --accent-on: #0c1b10;
+
+  /* 背景图案墨色：本主题解算出的 AA 上限浓度。 */
+  --pattern-ink: color-mix(in srgb, var(--accent) 22%, transparent);
+  /* 侧边栏墨色：侧边栏底座可到 25.1%，不逾过主区浓度，取 22%。 */
+  --pattern-ink-sidebar: color-mix(in srgb, var(--accent) 22%, transparent);
+
+  color-scheme: dark;
+}
+
+/* ================= 主题过渡：切明暗时整页淡过去 =================
+ *
+ * 起因（用户原话）："明暗切换的时候添加过渡动画，现在切换太刺眼不舒服。"
+ * 明暗是**整页反相**，硬跳一下确实刺眼。
+ *
+ * 机制：`data-theme` 换掉的全是**自定义属性**，而自定义属性默认不可插值。
+ * 用 @property 把色板令牌声明成 `<color>`，它们就成了可动画属性；再在 <html>
+ * 上给一条 transition，整页（含所有子元素）就跟着一帧一帧地走。
+ *
+ * ⚠️ 三条**实测**出来的纪律（2026-10-15 的实验台在 F:/temp/theme-lab，别凭直觉改）：
+ *  ① `transition: all` **不包含**自定义属性 —— 必须逐个列出来。实测 `all` 直接硬跳，
+ *     一条过渡都不创建。
+ *  ② 只有"主题块里直接赋值"的令牌需要注册：color-mix(var(--accent) …)、
+ *     `--muted: var(--text-3)`、渐变里的 `var(--pattern-ink)` 这些**派生令牌自动跟着走**，
+ *     实测逐帧在变。所以下面 35 条注册里没有它们。
+ *  ③ "装 transition"与"改 data-theme"必须在**两帧**里发生：同一任务里做，浏览器
+ *     认定"改之前没有过渡"，一条都不会创建。页面里天然满足（闸门先开、点击后到），
+ *     写探针时要注意。
+ *
+ * 顺带做的整理：阴影 / 品牌渐变 / 顶部暖光本来是"几何 + 墨色"揉成一行的字面量
+ * （字面量插值不了），已拆成"墨色令牌（注册，可插值）+ 几何在 :root 拼一次"。
+ *
+ * 代价（认下，数字是实测）：
+ *  - 整页反相**必然**经过对比度最低的中点（底色与文字同时走到 50% 灰）。240ms 里
+ *    正文/底色的对比度 <3:1 的窗口约 40ms、<4.5:1 约 60ms；换更陡的缓动或更短的
+ *    时长能压到 20ms 级。**错峰（底色先走、文字后走）实测更糟**（最低 1.01、70ms），
+ *    所以故意不错峰 —— 想"优化"这条之前先跑一遍那个实验台。
+ *  - 首帧校正主题不播过渡：闸门是 <html> 的 data-theme-anim，由 useSettings 开。
+ *  - 换配色时圆角仍硬跳（--radius-* 是长度，这次没注册）；换配色只在设置页发生，
+ *    且半径差 ≤ 6px，看得见的机会很小。
+ *  - 每次过渡整页重算样式 240ms；大书签树下与新标签页本身的开销同量级（既有约定 认过全量渲染）。
+ */
+@property --bg { syntax: '<color>'; inherits: true; initial-value: #faf5ec; }
+@property --surface { syntax: '<color>'; inherits: true; initial-value: #fffdf8; }
+@property --surface-2 { syntax: '<color>'; inherits: true; initial-value: #f4eddf; }
+@property --surface-3 { syntax: '<color>'; inherits: true; initial-value: #ede3cf; }
+@property --text { syntax: '<color>'; inherits: true; initial-value: #2e2a22; }
+@property --text-2 { syntax: '<color>'; inherits: true; initial-value: #6a5f4e; }
+@property --text-3 { syntax: '<color>'; inherits: true; initial-value: #746a55; }
+@property --line { syntax: '<color>'; inherits: true; initial-value: #e9dcc6; }
+@property --line-strong { syntax: '<color>'; inherits: true; initial-value: #cdbb9b; }
+@property --accent { syntax: '<color>'; inherits: true; initial-value: #b05628; }
+@property --accent-hover { syntax: '<color>'; inherits: true; initial-value: #96441f; }
+@property --accent-soft { syntax: '<color>'; inherits: true; initial-value: #f7e7d6; }
+@property --accent-text { syntax: '<color>'; inherits: true; initial-value: #9c4a22; }
+@property --accent-on { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --danger { syntax: '<color>'; inherits: true; initial-value: #b03a30; }
+@property --danger-soft { syntax: '<color>'; inherits: true; initial-value: #fae8e2; }
+@property --on-accent { syntax: '<color>'; inherits: true; initial-value: #fffdf8; }
+@property --on-danger { syntax: '<color>'; inherits: true; initial-value: #fffdf8; }
+@property --overlay { syntax: '<color>'; inherits: true; initial-value: rgba(60, 42, 24, 0.42); }
+@property --card { syntax: '<color>'; inherits: true; initial-value: rgba(255, 253, 248, 0.88); }
+@property --card-hover { syntax: '<color>'; inherits: true; initial-value: #fffdf8; }
+@property --chip { syntax: '<color>'; inherits: true; initial-value: rgba(255, 253, 248, 0.62); }
+@property --sidebar { syntax: '<color>'; inherits: true; initial-value: #f3ecde; }
+@property --scrollbar-thumb { syntax: '<color>'; inherits: true; initial-value: rgba(122, 108, 85, 0.35); }
+@property --scrollbar-thumb-hover { syntax: '<color>'; inherits: true; initial-value: rgba(122, 108, 85, 0.6); }
+@property --brand-from { syntax: '<color>'; inherits: true; initial-value: #0a8049; }
+@property --brand-to { syntax: '<color>'; inherits: true; initial-value: #0a8049; }
+/* --brand-page / --brand-stroke 已随旧的三色画法作废，
+   声明与过渡项一并删除，别留死令牌。 */
+@property --brand-mark-color { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --bg-glow-ink { syntax: '<color>'; inherits: true; initial-value: rgba(194, 120, 66, 0.1); }
+@property --shadow-1-ink { syntax: '<color>'; inherits: true; initial-value: rgba(122, 84, 48, 0.07); }
+@property --shadow-2-ink { syntax: '<color>'; inherits: true; initial-value: rgba(122, 84, 48, 0.1); }
+@property --shadow-3-ink { syntax: '<color>'; inherits: true; initial-value: rgba(122, 84, 48, 0.13); }
+@property --shadow-modal-ink { syntax: '<color>'; inherits: true; initial-value: rgba(84, 58, 32, 0.24); }
+
+/* 闸门：只有 data-theme-anim='on' 时才铺过渡（首帧校正主题不播，见 useSettings）。
+   ⚠️ 逐个列出是必须的（上面的纪律 ①）—— 想加主题色，这个列表也要加一条，
+   lib/theme-tokens.test.ts 会拦下漏掉的那种。 */
+html[data-theme-anim='on'] {
+  transition:
+    --bg var(--dur-slow) var(--ease-standard),
+    --surface var(--dur-slow) var(--ease-standard),
+    --surface-2 var(--dur-slow) var(--ease-standard),
+    --surface-3 var(--dur-slow) var(--ease-standard),
+    --text var(--dur-slow) var(--ease-standard),
+    --text-2 var(--dur-slow) var(--ease-standard),
+    --text-3 var(--dur-slow) var(--ease-standard),
+    --line var(--dur-slow) var(--ease-standard),
+    --line-strong var(--dur-slow) var(--ease-standard),
+    --accent var(--dur-slow) var(--ease-standard),
+    --accent-hover var(--dur-slow) var(--ease-standard),
+    --accent-soft var(--dur-slow) var(--ease-standard),
+    --accent-text var(--dur-slow) var(--ease-standard),
+    --accent-on var(--dur-slow) var(--ease-standard),
+    --danger var(--dur-slow) var(--ease-standard),
+    --danger-soft var(--dur-slow) var(--ease-standard),
+    --on-accent var(--dur-slow) var(--ease-standard),
+    --on-danger var(--dur-slow) var(--ease-standard),
+    --overlay var(--dur-slow) var(--ease-standard),
+    --card var(--dur-slow) var(--ease-standard),
+    --card-hover var(--dur-slow) var(--ease-standard),
+    --chip var(--dur-slow) var(--ease-standard),
+    --sidebar var(--dur-slow) var(--ease-standard),
+    --scrollbar-thumb var(--dur-slow) var(--ease-standard),
+    --scrollbar-thumb-hover var(--dur-slow) var(--ease-standard),
+    --brand-from var(--dur-slow) var(--ease-standard),
+    --brand-to var(--dur-slow) var(--ease-standard),
+    --brand-mark-color var(--dur-slow) var(--ease-standard),
+    --bg-glow-ink var(--dur-slow) var(--ease-standard),
+    --shadow-1-ink var(--dur-slow) var(--ease-standard),
+    --shadow-2-ink var(--dur-slow) var(--ease-standard),
+    --shadow-3-ink var(--dur-slow) var(--ease-standard),
+    --shadow-modal-ink var(--dur-slow) var(--ease-standard);
+}

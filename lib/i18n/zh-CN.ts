@@ -1,0 +1,654 @@
+/**
+ * 中文文案。**这张表是全部 key 的唯一来源** —— 其他语言文件用
+ * `Record<MessageKey, string>` 约束，少一个 key 编译就过不去。
+ *
+ * 约定：
+ * - `{n}` / `{size}` / `{x}` 是插值占位，由 `t()` 替换；
+ * - 允许少量 `<strong>` / `<code>`：这些字符串全部是仓库内的常量，
+ *   不含任何用户输入，配合 `v-html` 渲染时不存在注入面（见 既有约定）。
+ */
+
+export const zhCN = {
+  'app.title': '师兄起页 · 设置',
+  // 左栏品牌块里的裸应用名（app.title 带"· 设置"，是给 nav 的 aria-label 用的）。
+  'app.name': '师兄起页',
+
+  'nav.general': '通用',
+  'nav.appearance': '外观',
+  'nav.sync': '同步',
+  'nav.snapshot': '快照',
+  'nav.data': '数据',
+  'nav.about': '关于',
+
+  'common.expand': '展开看看',
+  'common.collapse': '收起',
+  'common.close': '关闭',
+  'common.delete': '删除',
+  'common.confirmDelete': '再点一次确认删除',
+  'common.loading': '正在读取…',
+  'common.unknownTime': '时间未知',
+  'common.never': '从未成功同步',
+  'common.from': '来自 {x}',
+  'common.thisDevice': '本机',
+  'common.copied': '已复制',
+  'common.cancel': '取消',
+
+  'general.title': '通用',
+  'general.searchEngine': '搜索引擎',
+  'general.searchEngine.hint':
+    '只在搜索框里按下回车时用这个引擎打开网页。输入过程中不会向任何服务发送关键词。',
+  'general.sidebar': '侧边栏',
+  'general.sidebar.show': '显示侧边栏',
+  'general.sidebar.hint':
+    '收起后，把鼠标移到页面左缘（或按 [ 键）可临时展开侧边栏，触屏点左缘的把手。侧边栏右边缘可以拖动调宽，双击恢复默认。',
+  'general.sidebar.resetWidth': '恢复默认宽度',
+  'general.shortcuts': '快捷键',
+  'general.shortcuts.focus': 'Ctrl / Cmd + K 或 /：聚焦搜索框',
+  'general.shortcuts.clear': 'Esc：清空搜索',
+  'general.shortcuts.sidebar': '[：展开 / 收起侧边栏',
+  'general.shortcuts.recent': ']：展开 / 收起最近访问面板',
+  'general.drag': '拖拽整理',
+  'general.drag.toggle': '允许拖拽整理书签',
+  'general.drag.hint':
+    '打开后可以直接拖动书签与文件夹改变顺序，或拖进另一个文件夹改变归属 —— 松手即生效，没有二次确认。' +
+    '上一次移动会留一个「撤销」，直到下一次移动为止。' +
+    '拖拽用的是浏览器的原生拖放，<strong>触屏与键盘不支持</strong>，请用浏览器书签管理器。',
+  'general.editBookmarks': '新建与重命名',
+  'general.editBookmarks.toggle': '允许在主页新建书签、新建文件夹与重命名',
+  'general.editBookmarks.hint':
+    '打开后，标题行右侧有一个固定的「＋新建」，鼠标移到书签网格末尾也会浮出一张新建卡；' +
+    '右键文件夹还能在它里面新建、或重命名它自己。<br />' +
+    '每一次改动都会记下「上一次改动」，内容区上方的撤销条随时可以反悔，直到下一次改动把它顶掉。' +
+    '删除书签的入口本来就在右键菜单里，不受这个开关影响。',
+  'general.recentPanel': '最近访问',
+  'general.recentPanel.toggle': '在主页右缘显示最近访问面板',
+  'general.recentPanel.hint':
+    '鼠标移到页面右缘（或按 ] 键）可浮出最近访问过的网页，点一下就在新标签页打开。' +
+    '它读的是浏览器自己的浏览历史 —— 不另存副本、不上传；跟着同步空间走的只有这个开关本身。' +
+    '窗口宽度 900px 以下不显示。',
+
+  'appearance.title': '外观',
+  'appearance.palette': '配色',
+  'appearance.palette.hint': '两套配色各自有浅色与深色两种呈现 —— 配什么色、多亮，是两件事。',
+  'appearance.palette.warm': '暖陶晨光',
+  'appearance.palette.youth': '青柠夏夜',
+  'appearance.mode': '明暗',
+  'appearance.mode.hint': '「跟随系统」随操作系统的深浅色设置自动切换，对两套配色都生效。',
+  'appearance.mode.light': '浅色',
+  'appearance.mode.dark': '深色',
+  'appearance.mode.system': '跟随系统',
+  'appearance.pattern': '背景图案',
+  'appearance.pattern.hint': '铺在新标签页底色上的纸纹，与右上角那层暖光叠加；颜色跟着配方主色，强度按明暗定死。侧边栏与设置页不铺。',
+  'appearance.pattern.none': '无',
+  'appearance.pattern.dots': '点阵纸',
+  'appearance.pattern.checker': '方格纸',
+  'appearance.pattern.grid': '细网格',
+  'appearance.language': '语言',
+  'appearance.language.hint':
+    '「跟随浏览器」按浏览器界面的语言自动选择。目前只有简体中文与 English 两档。',
+  'appearance.language.zh': '简体中文',
+  'appearance.language.en': 'English',
+  'appearance.language.system': '跟随浏览器',
+  // ---- 每行卡片数（既有约定，本地偏好不上云）----
+  'appearance.cardsPerRow': '每行卡片数',
+  'appearance.cardsPerRow.hint':
+    '书签卡片与文件夹瓦片每行最多放几个。窗口不够宽时会自动减少列数，让卡片不至于窄到读不了 —— ' +
+    '所以这是个上限，不是固定值，下面那行会告诉你现在的窗口实际能排几列。' +
+    '改完回到书签主页就能看到效果。',
+  'appearance.cardsPerRow.value': '每行 {n} 个',
+  'appearance.cardsPerRow.actual': '当前窗口下实际每行 {n} 个',
+  'appearance.cardsPerRow.capped': '（窗口不够宽，再挤卡片就太窄了）',
+
+  'data.title': '数据',
+  'data.export': '导出书签',
+  'data.export.hint':
+    '导出的内容直接来自浏览器书签，师兄起页不保存任何副本。这一步是只读的，不会改动你的书签。',
+  'data.export.html': '导出为 HTML',
+  'data.export.html.hint': '浏览器通用的书签文件格式，Chrome / Edge / Firefox 都能直接导入。',
+  'data.export.json': '导出为 JSON',
+  'data.export.json.hint': '带目录层级与时间的完整结构，适合自己处理或留档。',
+  'data.export.busy': '正在导出…',
+  'data.export.failed': '导出失败：{reason}',
+  'data.import': '导入',
+  'data.import.hint':
+    '师兄起页不导入书签 —— 导入请用浏览器自带的书签管理器（Ctrl+Shift+O）里的「导入书签」。',
+  'data.settings': '设置备份',
+  'data.settings.hint':
+    '只含界面偏好（主题、语言、搜索引擎、侧边栏），不含任何书签、密码或同步凭据。',
+  'data.settings.export': '导出设置',
+  'data.settings.import': '导入设置',
+  'data.settings.importDone': '设置已导入，正在重新加载。',
+  'data.settings.invalid': '这个文件不是师兄起页的设置备份，或已损坏。',
+  // 具体的四种失败原因。给的是机器可读的码，翻译在这里做。
+  'data.settings.importError.notJson': '这个文件不是合法的 JSON，读不出来。',
+  'data.settings.importError.notObject': '备份内容的顶层不是一个对象。',
+  'data.settings.importError.kindMismatch': '这不是师兄起页的设置备份文件。',
+  'data.settings.importError.versionMismatch': '备份的版本与当前版本不一致，无法识别。',
+  'data.stats': '当前共 {bookmarks} 个书签、{folders} 个目录。',
+
+  'about.title': '关于',
+  'about.version': '版本 {version}',
+  'about.privacy': '隐私',
+  'about.privacy.body':
+    '书签只在本机读取，不上传、不落盘、不做统计。页面不使用任何外部 CDN、远程字体或远程脚本。' +
+    '唯一的出站连接是你自己填写的 WebDAV 服务器，且只有在你开启同步之后才会发生。' +
+    // ⚠️ 这句必须留着：赞助二维码是**唯一**的外部请求，删了这段说明，
+    //    上面那句"唯一出站连接是 WebDAV"就变成了假话。
+    '例外只有一处：打开这个「关于」页时，赞助与公众号二维码会从 GitHub / Gitee 拉取（两个源里挑先连上的那个），' +
+    '这一步不带任何参数，也只在你打开这一页时发生。',
+  'about.credits': '关于本扩展',
+  'about.credits.body':
+    '师兄起页接管浏览器新标签页，展示你已经收藏的书签。新建、重命名、移动与删除都直接写你的浏览器书签，' +
+    '与你在书签管理器里做的完全等价；每一次改动都留着反悔的余地（撤销条，或同步开启后的回收站）。',
+  'about.reset': '重置全部设置',
+  'about.reset.confirm': '再点一次确认重置',
+  // ---- 最近更新：只显示最新一版，历史留在仓库的 CHANGELOG.md ----
+  'about.changelog': '最近更新',
+  'about.changelog.released': '{date} 发布',
+  'about.changelog.fold': '这一版改了什么',
+  'about.changelog.empty': '暂时读不到更新记录。',
+  // ---- 赞助二维码 + 公众号（既有约定：GitHub / Gitee 双镜像，自动选最快的）----
+  'about.sponsor': '赞助作者',
+  'about.sponsor.hint':
+    '如果这个扩展帮到了你，可以请作者喝杯咖啡。金额随意 —— 不打赏任何功能都不受影响。',
+  'about.sponsor.alipay': '支付宝',
+  'about.sponsor.wechatPay': '微信支付',
+  'about.sponsor.loading': '正在选择最快的图片源…',
+  'about.sponsor.unavailable':
+    '二维码暂时加载不出来（两个图片源都没连上）。请检查网络后重试。',
+  'about.sponsor.retry': '重试',
+  'about.sponsor.imageError': '这张图加载不出来',
+  // ---- 关注公众号：横幅图 + 名字 + 一句说明 ----
+  'about.official': '关注公众号',
+  // 公众号名字是**中文专名**，在微信里就是靠这三个字搜的 —— 不要翻译、不要改写。
+  'about.official.name': '师兄知道',
+  'about.official.body':
+    '新版本、用法和新功能会首发在公众号「师兄知道」。扫一扫，或在微信里搜这个名字。',
+  'about.reset.done': '已恢复默认设置。',
+  'about.reset.hint': '只重置界面偏好，不影响浏览器书签，也不影响同步配置与同步状态。',
+
+  'home.title': '所在位置',
+  // 时段问候 既有约定 加、既有约定 按用户要求移除（连同日期与这组 key）。
+  'home.searchPlaceholder': '搜索书签、网址或文件夹…',
+  'home.searchAria': '搜索书签或网页',
+  // 框内那颗引擎选择器的无障碍名（既有约定 加回来时一并恢复）。
+  'home.engineAria': '搜索引擎',
+  'home.theme.summary': '主题：{palette} · {mode}',
+  'home.manager': '打开浏览器书签管理器',
+  'home.managerHint': '请按 Ctrl+Shift+O（macOS 为 Cmd+Option+B）打开浏览器书签管理器。',
+  'home.delete.done': '已删除「{title}」。正在同步 —— 完成后就能在设置页的回收站里找回它。',
+  'home.delete.doneManualSync':
+    '已删除「{title}」。自动同步是关着的 —— 到设置页的「同步」里点一次「立即同步」，它才会进回收站。',
+  'home.delete.failed': '删除失败：{reason}。可以改用浏览器书签管理器删除。',
+  'home.copyDone': '链接已复制到剪贴板。',
+  'home.open.scriptlet': '书签小工具要在它自己那个网页上运行，主页打不开它。',
+  'home.open.blocked': '打不开 {protocol} 这类地址。可以右键 → 复制链接，去地址栏或浏览器书签管理器里打开。',
+  'home.tabAction.noTabApi': '当前环境不支持打开新标签页，请到浏览器书签管理器里操作。',
+  'home.tabAction.noWindowApi': '当前环境不支持打开新窗口，请到浏览器书签管理器里操作。',
+  'home.tabAction.incognito':
+    '要开无痕窗口，得先在扩展管理页（chrome://extensions）里给「师兄起页」打开「允许在无痕模式下运行」，然后重新打开这个新标签页。',
+  'home.tabAction.split':
+    '这个浏览器还不支持用扩展打开分屏窗口（需要 Chrome 155 及以上；Edge 暂未提供接口）。可以先在新窗口中打开，再用系统的窗口并排。',
+  'home.tabAction.copyFailed': '没能复制到剪贴板。链接是：{url}',
+  'menu.aria': '{title} 的操作',
+  'menu.openTab': '在新标签页中打开',
+  'menu.openWindow': '在新窗口中打开',
+  'menu.openIncognito': '在无痕窗口中打开',
+  'menu.openIncognitoEdge': '在 InPrivate 窗口中打开',
+  'menu.incognitoHint': '需要先在扩展管理页里允许「师兄起页」在无痕模式下运行',
+  'menu.openSplit': '在分屏窗口中打开',
+  'menu.splitHint': '需要 Chrome 155 及以上；Edge 暂未提供接口',
+  'menu.copyLink': '复制链接',
+  'menu.newBookmark': '新建书签',
+  'menu.newFolder': '新建文件夹',
+  'menu.rename': '重命名',
+  'menu.delete': '删除书签',
+  'menu.deleteConfirm': '确认删除',
+  'menu.deleteNote': '删掉之后它会在设置页的<strong>回收站</strong>里，随时可以找回。再点一次确认。',
+  'menu.deleteNoteManualSync':
+    '删掉之后它会在设置页的<strong>回收站</strong>里，但自动同步是关着的 —— 要你手动同步一次。再点一次确认。',
+  'menu.deleteNoteFinal': '没有开启同步，删掉之后<strong>找不回来</strong>。再点一次确认。',
+  // 删除文件夹。空文件夹走菜单内两下点击；非空必须过删除预览模态。
+  'menu.deleteFolder': '删除文件夹',
+  'menu.deleteFolderConfirm': '确认删除',
+  'menu.deleteFolderNote':
+    '将删除这个空文件夹。删掉之后它会在设置页的<strong>回收站</strong>里，随时可以找回。再点一次确认。',
+  'menu.deleteFolderNoteManualSync':
+    '将删除这个空文件夹。删掉之后它会在设置页的<strong>回收站</strong>里，但自动同步是关着的 —— 要你手动同步一次。再点一次确认。',
+  'menu.deleteFolderNoteFinal': '没有开启同步，删掉之后<strong>找不回来</strong>。再点一次确认。',
+  // 删除预览模态
+  'home.folderDelete.title': '删除文件夹',
+  'home.folderDelete.subject': '将删除「{title}」及其全部内容。',
+  'home.folderDelete.statLine': '项将被删除 —— {n} 个书签、{m} 个子文件夹',
+  'home.folderDelete.statLineBookmarks': '项将被删除 —— {n} 个书签',
+  'home.folderDelete.samples': '其中包括：',
+  'home.folderDelete.typedNameLabel': '请输入文件夹名以确认：',
+  'home.folderDelete.typedNameMismatch': '名字对不上，再试一次。',
+  'home.folderDelete.noSync': '未开启同步 —— 删掉之后<strong>找不回来</strong>。',
+  'home.folderDelete.manualSync': '自动同步关着 —— 删掉之后要去设置页点一次「立即同步」才进回收站。',
+  'home.folderDelete.confirm': '删除 {n} 项',
+  'home.folderDelete.cancel': '取消',
+  'home.folderDelete.loading': '正在计算文件夹内容…',
+  'home.folderDelete.unreadable': '读不到这个文件夹了，可能刚刚被删掉。',
+  'home.folderDelete.done':
+    '已删除文件夹「{title}」及其全部内容（{n} 项）。正在同步 —— 完成后就能在设置页的回收站里找回。',
+  'home.folderDelete.doneManualSync':
+    '已删除文件夹「{title}」及其全部内容（{n} 项）。自动同步是关着的 —— 到设置页的「同步」里点一次「立即同步」，它才会进回收站。',
+  'home.folderDelete.failed': '删除文件夹失败：{reason}。整理文件夹也可以改用浏览器书签管理器。',
+  'home.folderDelete.rootRejected': '书签栏、其他书签与移动设备书签是浏览器的根目录，不能删除。',
+  // 并发编辑挡下的一部分节点
+  'home.folderDelete.blocked':
+    '「{root}」里有 {n} 项没能删掉：另一台设备改过它们，现已挂到根目录。详见设置页的待处理列表。',
+  'home.settings': '打开设置',
+  'home.settingsHint': '无法打开设置页，请从扩展的「选项」进入。',
+  'home.brandNote': '每一次打开，都有新的发现',
+  // ⚠️ 别写"不上传"：配了同步之后书签与偏好都会进用户自己的
+  //    WebDAV 空间，那句就变成假话。如实说数据在哪两处。
+  'home.sidebarFoot': '书签只存在本机与你自己的同步空间',
+  'home.loading': '正在把你的书签摆好…',
+  'home.searchResults': '搜索结果',
+  'home.countBookmarks': '{n} 个书签',
+  'home.collapseSidebar': '收起侧边栏',
+  'home.pinSidebar': '钉住侧边栏',
+  'home.expandSidebar': '展开侧边栏',
+  'home.resizeSidebar': '拖动调整侧边栏宽度',
+  // ---- 右缘「最近访问」浮出面版----
+  'home.recent.title': '最近访问',
+  'home.recent.handle': '展开最近访问',
+  'home.recent.close': '关闭最近访问',
+  'home.recent.empty': '还没有最近访问的网页',
+  'home.recent.error': '最近访问没能读取',
+  'home.recent.retry': '重试',
+  'home.recent.viewAll': '查看全部历史',
+  'home.recent.noTabApi': '当前环境不支持打开新标签页，请在浏览器里按 Ctrl+H 查看历史记录。',
+  // 分组头（50 条平铺是一面墙，按日历天分三档 —— 浏览器历史页的既有心智模型）。
+  'home.recent.today': '今天',
+  'home.recent.yesterday': '昨天',
+  'home.recent.earlier': '更早',
+  'home.error.title': '无法读取当前浏览器书签',
+  'home.error.retry': '重新读取',
+  'home.error.manager': '打开书签管理器',
+  'home.empty.title': '还没有可显示的书签',
+  'home.empty.description': '先在浏览器收藏几个网站，再回来看看。',
+  'home.noResults.title': '没有找到相关书签',
+  'home.noResults.description': '试个更短的关键词，或者换一级目录看看。',
+  'home.noResults.clear': '清除搜索',
+  'home.folderEmpty.title': '这个文件夹是空的',
+  'home.folderEmpty.description': '从左侧展开其他分类，或点击面包屑回到上层。',
+  // 卡片提示：自绘气泡里的两行之一 —— 名字 + 里面有几条。
+  // 不带浏览器内部 id：那是实现细节，用户看了只会问"这是什么"。
+  'home.folderTile.tip': '{name} · {count} 个书签',
+  'home.sync.off': '同步设置',
+  'home.sync.conflict': '同步：{n} 个冲突待处理',
+  'home.sync.auth': '同步：凭据有问题，点击处理',
+  'home.sync.error': '同步：{reason}',
+  'home.sync.errorFallback': '上次同步失败',
+  'home.sync.never': '同步：尚未同步，点击设置',
+  'home.sync.skipped': '{n} 条地址过长未同步',
+  'home.sync.failed': '{n} 条没能写入本机',
+  'sync.status.skipped': '地址过长未同步',
+  'sync.status.skippedValue': '{n} 条',
+  'sync.status.failed': '没能写入本机',
+  'sync.status.failedValue': '{n} 条',
+  'label.summary.skipped': '{n} 条地址过长未同步',
+  'label.summary.failed': '{n} 条没能写入本机',
+  'home.sync.ok': '同步：正常，点击设置',
+  // 拖拽整理
+  'home.drag.into': '放进「{title}」',
+  'home.drag.moved': '已把「{title}」移到「{parent}」。',
+  'home.drag.movedAdjusted':
+    '已把「{title}」移到「{parent}」，但位置比放下时靠前一位 —— 浏览器不接受跨目录直接追加到末尾。',
+  'home.drag.movedNoUndo': '已把「{title}」移到「{parent}」，但这一步没能记下来，撤销不可用。',
+  'home.drag.undo': '撤销',
+  'home.drag.dismiss': '不用了',
+  'home.drag.failed': '移动失败：{reason}。整理书签也可以改用浏览器书签管理器。',
+  'home.drag.undoFailed': '撤销失败：{reason}',
+  'home.drag.reject.unknownDragged': '这条已经不在当前书签树里了，请刷新后重试。',
+  'home.drag.reject.unknownTarget': '落点已经不在当前书签树里了，请刷新后重试。',
+  'home.drag.reject.intoSelf': '不能把文件夹拖进它自己或它的子目录里。',
+  'home.drag.reject.virtualTarget': '「未归类」是师兄起页合成的视图，不是能放东西进去的文件夹。',
+  'home.drag.reject.rootParent':
+    '浏览器根节点下的顺序师兄起页不改 —— 一级目录与「未归类」里的散落书签请用书签管理器整理。',
+  // 新建 / 改名 / 撤销「上一次改动」。
+  // 撤销条与 undoDone 按改动种类分开说 —— 同一条"已撤销"分不清刚才到底是新建、改名还是移动。
+  'home.edit.new': '新建',
+  'home.edit.newHint': '在「{folder}」里新建',
+  'home.edit.noChange': '名称与网址都没有改动。',
+  'home.edit.created': '已在「{parent}」里新建「{title}」。',
+  'home.edit.createdNoUndo': '已在「{parent}」里新建「{title}」，但这一步没能记下来，撤销不可用。',
+  'home.edit.updated': '已把「{before}」改名为「{title}」。',
+  'home.edit.updatedNoUndo': '已把「{before}」改名为「{title}」，但这一步没能记下来，撤销不可用。',
+  'home.edit.failed': '操作失败：{reason}。新建与改名也可以改用浏览器书签管理器。',
+  'home.edit.undoBar.create': '上一次新建：「{title}」',
+  'home.edit.undoBar.update': '上一次改名：把「{before}」改成了「{title}」',
+  'home.edit.undoBar.move': '上一次移动：把「{title}」移到了「{parent}」',
+  'home.edit.undoDone.create': '已撤销 —— 新建的「{title}」已经删掉。',
+  'home.edit.undoDone.update': '已撤销 —— 「{title}」已经改回「{before}」。',
+  'home.edit.undoDone.move': '已撤销 —— 「{title}」回到了原来的位置。',
+  'home.edit.undoFailed': '撤销失败：{reason}',
+  'home.edit.error.apiUnavailable': '当前环境不支持写入浏览器书签。',
+  'home.edit.error.nodeMissing': '要改动的那条书签、或它要回到的地方已经不在了。',
+  // 删除之后"指着被删节点"的界面要素主动失效
+  'home.edit.undoTargetGone': '上一次改动的目标已经不在书签树里，撤销不可用。',
+  'home.editor.createTitle': '新建到「{folder}」',
+  'home.create.in': '新建书签到「{folder}」',
+  'home.create.off': '新建已关闭（设置页 → 通用 → 允许新增与删改）',
+  'home.create.searching': '搜索态没有当前目录，先清掉搜索词',
+  'home.create.trash': '回收站里不能新建',
+  'home.create.unfiled': '「未归类」是根级，建进去会退出同步范围',
+  'home.editor.renameTitle': '重命名',
+  'home.editor.typeBookmark': '书签',
+  'home.editor.typeFolder': '文件夹',
+  'home.editor.titleLabel': '名称',
+  'home.editor.urlLabel': '网址',
+  'home.editor.titlePlaceholder': '留空也可以，浏览器会自己起名',
+  'home.editor.urlPlaceholder': '例如 example.com',
+  'home.editor.urlRequired': '书签要有一个网址。',
+  'home.editor.urlRejected': '浏览器不接受这个地址，换一个试试。',
+  'home.editor.urlWillBecome': '将存为 {url}',
+  'home.editor.urlNotSyncable': '这类地址不参与师兄起页的同步，只在这台设备上看得见（浏览器自己的账号同步不受影响）。',
+  'home.editor.save': '保存',
+  'home.editor.rename': '重命名',
+  'home.editor.typeLabel': '新建类型',
+  'home.editor.folderLabel': '保存到文件夹',
+  'home.editor.folderHint': '不选就用当前目录；建好后也可以直接拖到别处。',
+
+  'sync.title': '同步',
+  'sync.phase.ready': '就绪',
+  'sync.phase.unconfigured': '未配置',
+  'sync.phase.conflict': '有冲突待处理',
+  'sync.phase.auth': '凭据有问题',
+  'sync.phase.error': '上次同步失败',
+  'sync.server.title': 'WebDAV 服务器',
+  'sync.server.hint':
+    '同步是可选的。不配置时师兄起页仍然只是读取本机书签，行为完全不变。' +
+    '开启后本扩展会<strong>增删改你的浏览器书签</strong>，请确认后再启用。',
+  'sync.server.baseUrl': '服务器地址',
+  'sync.server.username': '用户名',
+  'sync.server.password': '应用密码',
+  'sync.server.password.placeholder': '建议使用坚果云的「应用密码」而不是登录密码',
+  'sync.server.remotePath': '远端子目录（可选）',
+  'sync.server.remotePath.placeholder': '留空则用默认子目录（{path}）',
+  // 换子目录 = 换一个同步位置：新位置没有空间时会**用同一个空间身份**在那里重建，
+  // 旧位置的文件留在原处不动。这行必须说清，否则用户会以为数据跟着搬。
+  'sync.server.remotePath.hint': '换一个子目录等于换一个同步位置：原来位置上的文件不会被搬过去。',
+  // 服务器卡里那截"配完就不用再碰"的部分。远端子目录有默认值了，
+  // 不该和地址、账号、密码一起挤在首屏。
+  'sync.server.more': '更多设置',
+  'sync.server.space':
+    '同步空间：<code>{id}</code> —— 同一个远端目录上的所有设备都应该是这一串。' +
+    '两台设备显示的不一样，说明它们连到了不同的空间。',
+  'sync.scope.title': '同步范围',
+  'sync.scope.hint': '只同步勾选的根下面的书签。根级散落的书签（师兄起页里显示为「未归类」）不参与同步。',
+  // ---- 折叠卡片的摘要行----
+  // 折叠的是明细，不是信息：这几张卡默认收起，摘要行必须一个人就把"现在什么状态"
+  // 说完 —— 尤其偏好那一条，既有约定 决策七要求不留下"不知道它传了什么"的状态。
+  'sync.scope.summary': '正在同步：{names}',
+  'sync.auto.summary.on': '已开启 · {interval}',
+  'sync.auto.summary.off': '已关闭 · 只在点「立即同步」时同步',
+  'sync.connection.title': '连接',
+  'sync.connection.test': '测试连接',
+  'sync.connection.testing': '测试中…',
+  'sync.connection.setup': '连接并同步',
+  'sync.connection.settingUp': '连接中…',
+  'sync.connection.sync': '立即同步',
+  'sync.connection.syncing': '同步中…',
+  'sync.connection.hint':
+    '「连接并同步」一次做完三件事：测试连通性 → 创建同步空间 → 首次同步。' +
+    '如果这个地址上已经有别的浏览器建好的同步空间，会直接<strong>加入</strong>它，两台设备共用一份数据。<br />' +
+    '连接测试只写一个临时文件再删掉；密码保存在本机扩展存储里，不会写进任何上传文件；' +
+    '扩展的本地存储不等价于系统密钥库，请勿在不信任的设备上配置。',
+  'sync.auto.title': '自动同步',
+  'sync.auto.toggle': '书签变化后与定时自动同步',
+  'sync.auto.hint':
+    '关掉后只有在设置页点「立即同步」才会同步。两件事共用一个开关：' +
+    '本机书签变动后约 30 秒同步一次；以及下面这个间隔的定时同步，用来接住其他设备推上来的改动。',
+  'sync.auto.interval': '间隔',
+  'sync.auto.interval.15': '每 15 分钟',
+  'sync.auto.interval.30': '每 30 分钟',
+  'sync.auto.interval.60': '每 1 小时',
+  'sync.auto.interval.180': '每 3 小时',
+  // ---- 界面偏好同步----
+  'sync.pref.title': '界面偏好',
+  'sync.pref.toggle': '把界面偏好也同步到别的浏览器',
+  'sync.pref.hint':
+    '开启后，下面这些偏好会随书签一起上传到你填写的 WebDAV 服务器，' +
+    '并在每一台装了师兄起页的浏览器上生效。关掉则本机偏好不再收发，只留在这台机器上。' +
+    '同步地址与密码仍然只留在本机 —— 它们本来就不上云。',
+  // 「明列上传哪些字段」是 既有约定 决策七的硬要求：不留下"不知道它传了什么"的状态。
+  'sync.pref.fields.label': '会上传这 12 项',
+  'sync.pref.fields':
+    '配色 / 明暗 / 背景图案 / 语言 / 搜索引擎 / 每行卡片数 / 侧边栏宽度 / 侧边栏收起 / ' +
+    '上次选中的分类 / 拖拽整理 / 新建与改名 / 最近访问面板',
+  // 写入令牌是数据层概念（没有设备名册），所以这里只说"本机 / 另一处安装" ——
+  // 用户真正要问的是"是我这台改的还是别台"，不是一个 UUID。
+  'sync.pref.last.local': '偏好最后一次更新来自本机（{time}）',
+  'sync.pref.last.remote': '偏好最后一次更新来自另一处安装（{time}）',
+  'sync.pref.last.none': '偏好还没有同步过',
+  'sync.pref.off': '已关闭：本机偏好只留在这台机器上',
+  'sync.pref.error': '上一轮偏好没同步上：{error}',
+  // 折叠时的摘要行：说不清"传了什么"就等于悄悄做（既有约定 决策七）。
+  'sync.pref.summary.on': '已开启 · 会上传这 12 项',
+  'sync.pref.summary.off': '已关闭 · 只留在这台机器上',
+  'sync.pref.who.local': '来自本机',
+  'sync.pref.who.remote': '来自另一处安装',
+  // 既有约定 之后不再有「自动处理冲突」开关：除了删除，所有字段一律逐字段 LWW
+  // 自动择一并留痕可撤销（见下方「同步覆盖的记录」）。
+  'sync.status.title': '同步',
+  'sync.status.lastSuccess': '上次成功',
+  'sync.status.gates': '待决定的删除',
+  'sync.status.conflictsValue': '{n} 个',
+  'sync.gates.title': '需要你决定的删除',
+  'sync.gates.hint':
+    '一台设备删除、另一台同时编辑了同一个书签时，同步<strong>不自动选边</strong>——' +
+    '删除是唯一不可逆的操作，留给你决定。选一个，决定会随下次同步传到所有设备。',
+  'sync.gates.empty': '没有需要决定的删除。',
+  'sync.gates.keep': '保留（编辑生效）',
+  'sync.gates.delete': '确认删除',
+  'sync.gates.editInfo': '并发编辑：{field} → {value}',
+  'sync.gates.field.title': '标题',
+  'sync.gates.field.url': '网址',
+  'sync.gates.field.parentSyncId': '所在文件夹',
+  'sync.gates.field.position': '顺序',
+  'sync.gates.field.logicalRootId': '逻辑根',
+  'sync.overrides.title': '同步覆盖的记录',
+  'sync.overrides.hint':
+    '两台设备同时改了同一个书签的同一个字段时，同步按确定性规则选一个生效，' +
+    '被盖掉的值记在这里，<strong>可以一键撤销</strong>（把你的值作为一次新改动推上去）。',
+  'sync.overrides.empty': '没有被盖掉的改动。',
+  'sync.overrides.undo': '撤销（改回我的值）',
+  'sync.overrides.field.title': '标题',
+  'sync.overrides.field.url': '网址',
+  'sync.overrides.field.parentSyncId': '所在文件夹',
+  'sync.overrides.field.position': '顺序',
+  'sync.overrides.field.logicalRootId': '逻辑根',
+  'sync.events.title': '同步记录',
+  'sync.events.empty': '还没有同步记录。',
+  'sync.events.note':
+    '本机保留的最近 100 次同步结果。这些记录<strong>只存在这台设备上</strong>，' +
+    '不会上传，也不参与任何同步判断。',
+  // ---- 快照（既有约定 修订 / 既有约定：恢复点的界面名；数据层仍叫恢复点）----
+  'snapshot.title': '快照',
+  'snapshot.lead':
+    '每次同步成功后，当时那份完整书签会自动存一份快照到云端。误删之后，可以把整棵树退回到任何一份快照 —— 包括那一刻之后被删掉的内容。',
+  'snapshot.status.title': '保险状态',
+  'snapshot.status.lastWrite': '上次写入',
+  'snapshot.status.count': '云端份数',
+  'snapshot.status.countValue': '{n} 份',
+  // 状态胶囊：全页最重要的一格，用颜色说话，不写句子。
+  'snapshot.status.pill.healthy': '生效中',
+  'snapshot.status.pill.broken': '写入失败',
+  'snapshot.status.pill.error': '读取失败',
+  'snapshot.status.pill.unconfigured': '未配置',
+  'snapshot.status.pill.never': '等待首次同步',
+  'snapshot.status.pill.loading': '读取中…',
+  // 仍然被「同步」分区那一行保险状态复用。
+  'snapshot.status.unconfigured': '还没配置同步。',
+  'snapshot.retention':
+    '保留策略：整个同步空间最多留最近 20 份，且 30 天内的一律保留 —— 超出的由后台每天自动整理掉（任何一台设备的整理都服务整个空间；关掉自动同步就不整理）。它是云上「曾经存在过的数据」唯一的收敛机制：「彻底删除」不回改旧档案，那些副本只随这份策略退休。',
+  'snapshot.list.title': '全部快照',
+  'snapshot.total': '共 {n} 份',
+  'snapshot.current': '当前',
+  'snapshot.rollback': '回退到这份快照',
+  'snapshot.rollingBack': '处理中…',
+  'snapshot.confirmRollback': '确认回退',
+  'snapshot.empty.title': '还没有快照',
+  'snapshot.empty.unconfigured': '还没配置同步',
+  'snapshot.empty.text': '成功同步一次之后，第一份快照就会自动出现。',
+  'snapshot.empty.textUnconfigured': '配置好同步并成功同步一次之后，就会出现第一份快照。',
+  'snapshot.empty.action': '去配置同步',
+  'snapshot.trashHint': '只想找回一两条书签？去书签主页侧边栏底部的「回收站」。',
+  'snapshot.fold': '关于快照与保留策略',
+  'snapshot.note':
+    '快照存在你自己的 WebDAV 上，<strong>整个同步空间共用一份</strong>，不同内容各占一份。' +
+    '「回退到这份快照」是<strong>前进式</strong>的：它只把差异生成成一批普通改动推上去' +
+    '（不重写云端历史、不动同步进度），所以其它浏览器会把它当成一次普通编辑来合并，' +
+    '有冲突就照常报出来。动手之前会先把<strong>当前状态另存一份</strong>，退不回来这件事不会发生。' +
+    '「重置同步」不会删除它们 —— 那正是最需要回退的时候。<br />' +
+    '<strong>删除同样是共享的</strong>：你在这里删掉的一份，其它设备也看不到了 —— 删之前先想一下，' +
+    '它是不是别处唯一的保险。',
+  // 行内回退预览：计数进胶囊，样本只列名字（数字不重复第二遍）。
+  'snapshot.preview.title': '退回这一份之后',
+  'snapshot.preview.note': '会连带恢复此后被删掉的内容。',
+  'snapshot.preview.created': '带回',
+  'snapshot.preview.updated': '改标题或网址',
+  'snapshot.preview.deleted': '删除',
+  'snapshot.preview.samples': '条目示例（每类最多 5 条）',
+  'snapshot.notice.pointDeleted': '这一份快照已从云端删除。',
+  'snapshot.notice.rollbackNoop': '这一份与当前完全相同，没有需要回退的变化。',
+  'snapshot.notice.rollbackDone':
+    '已回退：{summary}，应用到本机 {applied} 步{conflictNote}。' +
+    '回退前的状态已另存为一份新的快照，随时可以退回来。',
+
+  // ---- 同步分区里的保险一行（既有约定：恢复点管理搬去「快照」分区，这里只留状态）----
+  'sync.insurance.label': '快照',
+  'sync.insurance.healthy': '保险生效中',
+  'sync.insurance.broken': '保险写入失败：{error}',
+  'sync.insurance.open': '打开快照',
+  'sync.danger.title': '危险操作',
+  'sync.danger.disconnect': '断开同步',
+  'sync.danger.purge': '清空本地同步状态',
+  'sync.danger.purgeConfirm': '再点一次确认清空',
+  'sync.danger.reset': '重置同步（含远端）',
+  'sync.danger.resetting': '正在重置…',
+  'sync.danger.resetConfirm': '再点一次确认重置',
+  'sync.danger.hint':
+    '断开同步只删除配置与密码，浏览器书签不受影响。清空本地同步状态会删除本机保存的 ' +
+    'ID 映射与日志，下次连接需要重新比对；同样不会删除或改动浏览器书签。',
+  'sync.danger.resetHint':
+    '<strong>重置同步</strong>会额外删除云端的全部同步历史，并让这台设备从头开始。' +
+    '这个动作不可撤销，通常只在同步出现无法自动修复的错误（例如反复生成重复书签）时使用。' +
+    '<strong>它不会删除浏览器书签，也不会删除云端同步空间本身</strong>' +
+    ' —— 另一台设备不用重新配置。重置后请先在各台设备的书签管理器里手工清理重复项，' +
+    '再发起同步。多台设备请都重置，只重置一台会把它重新拉回重复状态。',
+  'sync.notice.permissionAborted': '没有获得访问该服务器的权限，连接测试已取消。',
+  'sync.notice.permission': '没有获得访问该服务器的权限。',
+  'sync.notice.conditionalWrite': '{message}（该服务器支持条件写）',
+  'sync.notice.noConditionalWrite': '{message}（该服务器不支持条件写，将改用路径唯一性来保证文件不被覆盖）',
+  'sync.notice.joined': '已加入这个地址上已有的同步空间',
+  'sync.notice.created': '同步空间已创建',
+  'sync.notice.probeNote': '；该服务器不支持条件写，已改用路径唯一性防止文件被覆盖',
+  'sync.notice.firstSync':
+    '{head}。{probeNote}。首次同步：上传 {pushed} 条、下载 {pulled} 条、应用 {applied} 步。已开启自动同步。',
+  'sync.notice.syncDone': '同步完成：上传 {pushed} 条、下载 {pulled} 条、应用 {applied} 步。',
+  'sync.notice.disconnected': '已断开同步。本地的同步状态仍然保留，重新配置后可以接续。',
+  'sync.notice.purged': '本地同步状态已清空。浏览器书签本身没有被改动。',
+  'sync.notice.noCredential': '缺少 WebDAV 凭据，请重新填写密码后再重置。',
+  'sync.notice.resetDone':
+    '已重置：清掉云端 {states} 份设备状态、{history} 份恢复点。' +
+    '浏览器书签没有被改动。请手工清理重复书签后，重新填写并连接。',
+  'sync.notice.overrideUndone': '已把你的值作为一次改动提交，下一轮同步会传到其它设备。',
+
+  'label.trigger.manual': '手动',
+  'label.trigger.interval': '定时',
+  'label.trigger.debounced': '书签变化',
+  'label.trigger.setup': '首次连接',
+  'label.trigger.trashExpiry': '回收站到期',
+  'label.event.push': '已上传',
+  'label.event.pull': '已接收',
+  'label.event.skip': '跳过',
+  'label.event.error': '失败',
+  'label.event.failFallback': '同步失败',
+  'label.event.skipFallback': '本轮无需同步',
+  'label.summary.pushed': '上传 {n} 条',
+  'label.summary.pulled': '接收 {n} 条',
+  'label.summary.applied': '应用 {n} 步',
+  'label.summary.none': '没有变化',
+  'label.summary.conflicts': '{n} 个冲突待处理',
+  'label.rollback.created': '带回 {n} 条',
+  'label.rollback.deleted': '删除 {n} 条',
+  'label.rollback.updated': '改标题或网址 {n} 条',
+  'label.rollback.none': '没有任何差异',
+
+  'sync.root.bar': '书签栏',
+  'sync.root.other': '其他书签',
+  'sync.root.mobile': '移动设备书签',
+
+  'trash.title': '回收站',
+  'trash.titleCount': '回收站（共 {n} 条）',
+  'trash.pendingTitle': '待同步（{n}）',
+  'trash.tombsTitle': '回收站条目（{n}）',
+  'trash.pendingChip': '待同步',
+  'trash.pendingNote':
+    '这几条是<strong>刚在本机删掉、同步还没接手</strong>的。它们已经不在你的浏览器里了，但删除也还没传出去 —— <strong>点恢复就能直接放回原来的位置</strong>（不用等同步，也不发任何请求）。不管它们的话，等一轮同步跑完就会变成下面的正式回收站条目。',
+  // 按"一次删除"分组；组根的「另有 n 项」chip 就是展开开关。
+  'trash.groupExpand': '另有 {n} 项',
+  'trash.groupCollapse': '收起',
+  'trash.timeUnknown': '时间未知',
+  'trash.deviceUnknown': '未知设备',
+  'trash.deviceLocal': '本机',
+  'trash.deviceOther': '其他设备',
+  'trash.kindFolder': '文件夹',
+  'trash.kindBookmark': '书签',
+  'trash.empty':
+    '还没有删除记录。开启同步后，任何一台设备上删掉的书签都会先作为墓碑保留下来，可以从这里恢复。',
+  'trash.deletedBy': '由 {device} 删除',
+  'trash.location': '原位置：{parent}',
+  'trash.restore': '恢复',
+  'trash.restoreConfirm': '确认恢复',
+  'trash.purge': '彻底删除',
+  'trash.purgeConfirm': '确认彻底删除',
+  'trash.busy': '处理中…',
+  'trash.purgeAll': '全部清除',
+  'trash.purgeAllConfirm': '确认清除这 {n} 个',
+  'trash.purgeAllNote':
+    '这会抹掉<strong>{n}</strong> 个节点{orphanPart}。抹掉之后墓碑也没了 —— <strong>所有设备上都找不回来</strong>，之后的恢复点也不再带上它们。再点一次确认。',
+  'trash.purgeAllNote.orphan': '（{records} 条记录，另有 {n} 个还在的子项会被挂回根目录）',
+  'trash.restoreNote': '这次会恢复<strong>{n}</strong> 个节点{extraPart}。确认后再点一次，书签才会被改动。',
+  'trash.restoreNote.extra': '，其中 {extra} 个是它需要的上级文件夹或里面的子项{descPart}',
+  'trash.restoreNote.desc': '（含 {n} 个子项）',
+  'trash.pendingRestoreNote': '会把它放回<strong>原来的位置</strong>，这一步不发任何请求{extraPart}。确认后再点一次。',
+  'trash.pendingRestoreNote.extra': '；连它一起被删的 {n} 项也会跟着回去',
+  'trash.purgeNote':
+    '这会抹掉<strong>{n}</strong> 个节点{extraPart}{orphanPart}。所有设备下一轮同步都会抹掉它们，之后拍的新恢复点也不再带上。<strong>更早的恢复点里仍然存着它</strong> —— 回退到那一刻会把它带回来。再点一次确认。',
+  'trash.purgeNote.extra': '（含 {n} 个里面的墓碑子项）',
+  'trash.purgeNote.orphan': '，另有 {n} 个还在的子项会被挂回根目录',
+  'trash.parentDeleted': '它的上级文件夹也已被删除，会一起回来 —— 否则恢复出来的是没有归属的孤儿。',
+  // 既有约定：底部大段说明收进 <details>，拆成三条 —— 折叠的是参考材料，不是操作信息。
+  // 每个操作一句话之内（用户明确要求）：句内用冒号 / 逗号 / 破折号连接，不出现第二个句号。
+  'trash.noteTitle': '恢复与彻底删除的细节',
+  'trash.noteRestore':
+    '「恢复」：放回<strong>原来的位置</strong>。',
+  'trash.notePurge':
+    '「彻底删除」：数据会被<strong>删除</strong>，并<strong>同步到其他设备</strong>。',
+  'trash.noteGrace':
+    '<strong>宽限期 30 天</strong>：躺满 30 天的墓碑由后台自动彻底清除，受「自动同步」开关管辖。',
+  'trash.conflict.restore': '，另有 {n} 个冲突要你处理（别的设备在这期间也改过）',
+  'trash.conflict.purge': '，另有 {n} 个冲突要你处理（有并发改动把其中几条挡下了）',
+  'trash.notice.restoreNoop': '这一条已经不需要恢复了，可能别的设备已经把它恢复了。',
+  'trash.notice.restoreDone':
+    '已恢复 {n} 条{conflictNote}。它和一次普通编辑没有区别，其它设备会照常合并，有冲突就报出来。',
+  'trash.notice.pendingRestoreDone':
+    '已恢复 {n} 条，都回到了原来的位置。这次删除没有同步出去，别的设备不会收到任何变化。',
+  'trash.notice.purgeNoop': '这一条已经不在同步状态里了，没有需要清除的东西。',
+  'trash.notice.purgeDone': '已清除 {n} 个节点{conflictNote}。其它设备下一轮同步也会抹掉它们。',
+  'trash.notice.purgeAllDone': '已清除 {n} 个节点{conflictNote}。',
+  'trash.toSnapshots': '整个文件夹都不见了？去设置页的「快照」，可以把整棵树退回到它还在的时候。',
+
+  'engine.bing': '必应',
+  'engine.baidu': '百度',
+  'engine.google': 'Google',
+} as const;
+
+/** 全部可用 key。英文表用它做约束，两边永远同步。 */
+export type MessageKey = keyof typeof zhCN;

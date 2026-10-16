@@ -1,0 +1,29 @@
+{
+  "name": "shistart",
+  "description": "在新标签页中快速查看和搜索浏览器书签。",
+  "private": true,
+  "version": "1.2.1",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "compile": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "postinstall": "wxt prepare"
+  },
+  "dependencies": {
+    "vue": "^3.5.29"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.4",
+    "@wxt-dev/module-vue": "^1.0.3",
+    "fake-indexeddb": "^6.2.5",
+    "typescript": "^5.9.3",
+    "vite": "^8.1.5",
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.2.5",
+    "web-ext": "^10.5.0",
+    "wxt": "^0.21.3"
+  }
+}

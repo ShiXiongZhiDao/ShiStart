@@ -1,0 +1,66 @@
+/* ---------- 背景图案（既有约定；既有约定 修订范围：设置页也铺；
+   既有约定 再修订：侧边栏也铺；既有约定：右缘「最近访问」面板同侧边栏待遇） ----------
+   图案层列在暖光**之前**（background-image 第一层在最上），所以是"图案在下、
+   暖光在上"的叠加。background-repeat 必须逐层给：body 基础规则里那条
+   no-repeat 会被这里的三层列表继承成"全不重复"，图案就废了。
+
+   本文件被 newtab 与 options **两个入口共同引用**：设置页也要能实时看见自己
+   选了哪张纸纹—— 点了控件却毫无反应，比"设置页有一层纸纹"更糟。
+   墨色浓度按主题解算（tokens.css 的 --pattern-ink），设置页与主页共用同一套
+   文字令牌，AA 同流水线。
+
+   既有约定：侧边栏铺同一套图案。它的底色是**另一块**（不透明的 `--sidebar`，
+   与主区 `--bg` 不同亮度），所以墨色浓度单独解算（`--pattern-ink-sidebar`，
+   按主题四档，见 tokens.css）—— 共用一个浓度就得按最弱的侧边栏底座拉平，
+   把主区已解好的强度白降一档。options 页没有 `.sidebar` 元素，下面三条规则
+   在那边是空转。侧边栏内部可滚动（nav 树），图案随内容滚 —— 与主区图案在
+   滚动中本来就对不齐（sticky vs 滚动），不追求跨边界连续。
+   既有约定：右缘「最近访问」面板（`.recent-panel`）与左缘 `.sidebar`
+   **同一套图案、同一套墨色** —— 它的底色也是 `--sidebar`，不另解浓度。
+   差异只有一处且有据：左缘的滚动容器就是 `.sidebar` 本身（图案随 nav 滚），
+   右缘的滚动容器是里面的 `.recent-body`（图案钉在面板上、列表滚）——
+   两侧图案在滚动中本来就不追求连续（同左缘与主区的关系），不为它把面板
+   拆成"头尾无图案、中间有图案"的两截。 */
+html[data-pattern='dots'] body {
+  background-image: var(--bg-dots), var(--bg-glow);
+  background-size: 18px 18px, auto;
+  background-repeat: repeat, no-repeat;
+}
+
+html[data-pattern='dots'] .sidebar,
+html[data-pattern='dots'] .recent-panel {
+  background-image: var(--bg-dots-sidebar);
+  background-size: 18px 18px;
+  background-repeat: repeat;
+}
+
+html[data-pattern='checker'] body {
+  background-image: var(--bg-checker), var(--bg-glow);
+  /* 64px 瓦 = 32px 棋格（两层 45° 渐变各占半瓦，offset 取半瓦）。
+     22px 瓦（11px 棋格）太细碎，用户报"太小、看着难受"后放大（2026-10-13）。
+     只改几何不改墨色浓度 —— AA 对比度与格子大小无关。 */
+  background-size: 64px 64px, 64px 64px, auto;
+  background-position: 0 0, 32px 32px, 0 0;
+  background-repeat: repeat, repeat, no-repeat;
+}
+
+html[data-pattern='checker'] .sidebar,
+html[data-pattern='checker'] .recent-panel {
+  background-image: var(--bg-checker-sidebar);
+  background-size: 64px 64px, 64px 64px;
+  background-position: 0 0, 32px 32px;
+  background-repeat: repeat, repeat;
+}
+
+html[data-pattern='grid'] body {
+  background-image: var(--bg-grid), var(--bg-glow);
+  background-size: 16px 16px, 16px 16px, auto;
+  background-repeat: repeat, repeat, no-repeat;
+}
+
+html[data-pattern='grid'] .sidebar,
+html[data-pattern='grid'] .recent-panel {
+  background-image: var(--bg-grid-sidebar);
+  background-size: 16px 16px, 16px 16px;
+  background-repeat: repeat, repeat;
+}

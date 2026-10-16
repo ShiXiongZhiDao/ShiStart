@@ -1,0 +1,4 @@
+# pnpm 11+ 起，构建脚本白名单从 package.json 的 "pnpm" 字段迁移到这里。
+# esbuild 的安装脚本会校验/链接平台二进制，不放行会导致 vite / wxt 构建失败。
+allowBuilds:
+  esbuild: true

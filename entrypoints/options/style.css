@@ -1,0 +1,303 @@
+/* 设置页样式。所有数值一律引用 tokens.css，不出现裸数值。
+ *
+ * 这里放的是**跨分区共用**的东西：卡片、字段、按钮、通知、统计。
+ * 分区自己的样式（时间线、恢复点、冲突条目）留在各自的 <style scoped> 里，
+ * 见 既有约定 —— 拆出来之前它们散在唯一的那个 Vue 文件里。
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  font-size: var(--fs-md);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: var(--sp-3);
+  height: var(--sp-3);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* ---------- 分区容器 ---------- */
+
+/* 每个分区内部都是一叠卡片，间距由容器统一给，卡片自己不管。 */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+/* 分区标题行：标题 + 右侧的状态标记。五个分区都用这一套。 */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  padding: var(--sp-7);
+  box-shadow: var(--shadow-1);
+}
+
+.card h3 {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+.danger {
+  border-color: var(--line-strong);
+}
+
+.hint {
+  margin: 0 0 var(--sp-5);
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+.card > .hint:last-child {
+  margin-bottom: 0;
+}
+
+/* 行内代码（同步空间 id、排序键等）：两台设备要能逐字比对，用等宽 + 表格数字。 */
+.hint code,
+.card code {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  background: var(--surface-2);
+  padding: 0 var(--sp-1);
+  border-radius: var(--radius-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 表单 ---------- */
+
+.field {
+  display: block;
+  margin-bottom: var(--sp-5);
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: var(--sp-2);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+
+input[type='text'],
+input[type='url'],
+input[type='password'],
+select {
+  width: 100%;
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  transition: border-color var(--dur-fast) var(--ease-standard);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  cursor: pointer;
+}
+
+.check input {
+  accent-color: var(--accent);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+
+.row:last-child {
+  margin-bottom: 0;
+}
+
+.btn {
+  padding: var(--sp-4) var(--sp-7);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--surface);
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.danger-btn {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* 可点但不像按钮的次要动作（展开/收起）。 */
+.link-btn {
+  margin-left: var(--sp-3);
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  color: var(--text-2);
+}
+
+/* ---------- 反馈 ---------- */
+
+.notice {
+  margin: 0;
+  padding: var(--sp-5) var(--sp-6);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+.notice[data-tone='ok'] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.notice[data-tone='error'] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.error-line {
+  margin: var(--sp-5) 0 0;
+  color: var(--danger);
+  font-size: var(--fs-sm);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--sp-5);
+  margin: 0;
+}
+
+.stats dt {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+
+.stats dd {
+  margin: var(--sp-1) 0 0;
+  font-weight: var(--fw-medium);
+}
+
+.danger-link,
+.danger-link:hover {
+  color: var(--danger);
+}
+
+/* ---------- 折叠的大段说明（快照分区与「最近更新」共用） ---------- */
+
+.fold summary {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+
+.fold[open] summary {
+  margin-bottom: var(--sp-4);
+}
+
+.fold > .hint:last-child {
+  margin-bottom: 0;
+}

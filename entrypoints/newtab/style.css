@@ -1,0 +1,2828 @@
+/* 组件样式层：只允许引用 tokens.css 里的变量。 */
+
+* {
+  box-sizing: border-box;
+}
+
+/* 细滚动条：6px 圆角滑块 + 全透明轨道。
+   只写 ::-webkit-scrollbar：Chrome 121+ 见到 scrollbar-width/color 会禁用 webkit 伪元素，
+   改用浏览器自绘滚动条，会在侧边栏边缘留下一条发虚的默认轨道。 */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-pill);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+html,
+body {
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background: var(--bg);
+  /* 顶部一小片暖光（令牌见 tokens.css 的 --bg-glow）：让"打开新标签页"这个动作
+     有一点点清晨感。纯 CSS 渐变，不发请求。 */
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  font:
+    var(--fw-regular) var(--fs-md) / 1.5 Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* 统一的键盘焦点环 */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+  /* 入场动画是 `both` + delay 的：只清 duration 不清 delay 的话，
+     元素会先按首帧（透明）藏到 delay 结束 —— 反而更糟。 */
+  *,
+  *::before,
+  *::after {
+    animation-delay: 0.01ms !important;
+  }
+}
+
+/* ================= 骨架布局 ================= */
+
+.shell {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  width: 216px;
+  flex: 0 0 216px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  padding: var(--sp-7) var(--sp-5) var(--sp-6);
+  border-right: 1px solid var(--line);
+  background: var(--sidebar);
+  height: 100vh;
+  overflow: hidden auto;
+  /* 开合是两段式：内容先淡出/后淡入，宽度随后合上/先展开。
+     width 与 flex-basis 走 App.vue 的 sidebarStyle 内联值，过渡照常生效；
+     拖拽调宽时必须关掉（见 body.is-resizing），否则每帧都追。 */
+  transition:
+    width var(--dur-slow) var(--ease-standard),
+    flex-basis var(--dur-slow) var(--ease-standard),
+    padding var(--dur-slow) var(--ease-standard),
+    border-right-width var(--dur-slow) var(--ease-standard);
+}
+
+.sidebar > * {
+  transition:
+    opacity var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
+}
+
+/* 收起：内容立刻淡出并向左让位（无延迟），宽度用慢一档合上。 */
+.sidebar[data-collapsed='true'] > * {
+  opacity: 0;
+  transform: translateX(-8px);
+}
+
+/* 展开：反序 —— 宽度先走，内容晚一拍淡入。 */
+.sidebar:not([data-collapsed='true']) > * {
+  transition-delay: var(--dur-fast);
+}
+
+/* 存储读完后第一帧不许有过渡：否则"收起态"用户每次开新标签页都白看一遍关动画。 */
+.shell[data-boot='pending'] .sidebar,
+.shell[data-boot='pending'] .sidebar > * {
+  transition: none;
+}
+
+/* 拖拽调宽时逐帧改宽度，过渡必须让路。 */
+body.is-resizing .sidebar {
+  transition: none;
+}
+
+/* ================= 浮出 ================= */
+
+/*
+ * 浮出态：fixed 浮层压在收起态的主区之上，**贴顶通高**（2026-10-15 用户反馈：
+ * "侧边栏要置于顶部开头"—— 初版从 topbar 下沿起步，已改）。代价如实认下：
+ * 浮出时左缘 216px 会盖住搜索框，鼠标移开即还。
+ * 宽度仍来自 App.vue 的内联值（= sidebarWidth 偏好，与展开态一致）；开着沿用
+ * .sidebar 的基础过渡（宽度一步到位 + 内容晚一拍淡入），关走 'out' 的滑出。
+ * z-index 25：页面内容(1) < 两缘浮出(25) < 引擎菜单(30) < 卡片提示(35) < 右键菜单(40) < 弹窗(100) ——
+ * 面板压内容，但永不压菜单与弹窗。
+ */
+.sidebar[data-peek='on'],
+.sidebar[data-peek='out'] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 25;
+  border-right: 1px solid var(--line);
+  box-shadow: var(--shadow-2);
+}
+
+.sidebar[data-peek='on'] {
+  pointer-events: auto;
+}
+
+/*
+ * 关闭第二段（2026-10-15 用户报修"关闭时主内容整体左右移动"）：
+ * 直接摘掉浮层，aside 会从 fixed 变回流内，而内联 width 还是 216（正在向 0
+ * 过渡）→ aside 瞬间重新占流，主区猛窄 216px 再慢慢撑回，面板还闪回一下。
+ * 所以这一态：① 保持 fixed（不占流）；② width/flex-basis/padding 从滑出第一帧
+ * 就向 0 过渡（此刻 data-collapsed 已为 true，见 App.vue 的 layoutCollapsed）；
+ * 滑完（--dur-base，见 useSidebarPeek 的 PEEK_SLIDE_MS）摘 data-peek 时各项
+ * 已归零 —— 摘除那一下零回流、零闪板，主区全程纹丝不动。
+ */
+.sidebar[data-peek='out'] {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--dur-base) var(--ease-standard),
+    opacity var(--dur-base) var(--ease-standard),
+    width var(--dur-base) var(--ease-standard),
+    flex-basis var(--dur-base) var(--ease-standard),
+    padding var(--dur-base) var(--ease-standard);
+}
+
+/*
+ * 触屏把手（既有约定；2026-10-16 右缘加了一颗，既有约定）：悬停对手指不可能命中，
+ * 所以 coarse pointer 下给一颗可见可点的把手，贴在左缘、垂直居中。指针设备里
+ * 整个藏掉（display:none，也不占 Tab 顺序 —— 键盘用户的通道是 `[` / `]`）。
+ */
+.peek-handle {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .peek-handle {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 25;
+    width: 24px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-left: 0;
+    border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+    background: var(--surface);
+    color: var(--text-2);
+    box-shadow: var(--shadow-1);
+    cursor: pointer;
+  }
+
+  .peek-handle svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  /* 右缘把手：左缘那颗的水平镜像 —— 贴右缘、圆角换边、
+     箭头朝左（"从右缘展开"）。与左缘共用 .peek-handle 基类，
+     所以文档级吞击豁免名单（PEEK_SAFE_SELECTORS）对它一体适用。 */
+  .peek-handle--right {
+    left: auto;
+    right: 0;
+    border-left: 1px solid var(--line);
+    border-right: 0;
+    border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  }
+}
+
+/* ================= 右缘「最近访问」浮出 ================= */
+
+/*
+ * 与左缘浮出同一档（z-index 25）、同一套时序（useSidebarPeek 双实例，side: 'right'：
+ * 8px 右热区 / 120ms 开 / 2s 离开宽容 / Esc / `]` / 触屏把手 / ≤900px 整套退出），
+ * 贴顶通高（会盖住顶栏右侧 5 颗图标，鼠标移开即还 —— 与左缘盖搜索框同款代价）。
+ *
+ * 与左缘只有两处实质差异，都有据：
+ * ① **贴右缘**（right: 0），滑出方向 translateX(100%)；
+ * ② **不需要两段式关闭** —— 左栏的 'out' 段是为了修"摘 fixed 时 aside 回流、
+ *    主区猛窄 216px"（2026-10-15 用户报修）。右面板**永不占流**（没有
+ *    data-collapsed、没有 inline width 参与布局），单段滑出就是零回流。
+ *
+ * visibility 负责"关着时摸不到"：links 在收起态退出 Tab 顺序与读屏，
+ * 且延迟到滑出结束才隐（visibility 0s + --dur-base delay），滑出途中不闪没。
+ */
+.recent-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  border-left: 1px solid var(--line);
+  background: var(--sidebar);
+  box-shadow: var(--shadow-2);
+  transform: translateX(100%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--dur-base) var(--ease-standard),
+    opacity var(--dur-base) var(--ease-standard),
+    visibility 0s linear var(--dur-base);
+}
+
+.recent-panel[data-peek='on'] {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform var(--dur-base) var(--ease-standard),
+    opacity var(--dur-base) var(--ease-standard),
+    visibility 0s;
+}
+
+/* 存储读完后第一帧不许有过渡：与左栏同一条规矩（data-boot 由 App.vue 挂）。 */
+.shell[data-boot='pending'] .recent-panel {
+  transition: none;
+}
+
+/* ---------- 右缘面板内部 ---------- */
+
+.recent-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  /* 左内距 14px = 列的 8（body）+ 行的 6 —— 标题与每行图标左缘对齐。 */
+  padding: var(--sp-5) var(--sp-4) var(--sp-4) var(--sp-7);
+  border-bottom: 1px solid var(--line);
+}
+
+.recent-title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--text-1);
+}
+
+.recent-body {
+  flex: 1;
+  overflow: hidden auto;
+  padding: 2px var(--sp-4) 0;
+}
+
+/* 档头（今天 / 昨天 / 更早）：11px 弱色 + 右端条数。
+   50 条平铺是一面墙 —— 层次由档头承担，不靠装饰（既有约定 决策三）。 */
+.recent-group-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: var(--sp-5) var(--sp-3) var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  color: var(--text-3);
+}
+
+.recent-group-count {
+  font-size: var(--fs-2xs);
+  color: var(--text-3);
+}
+
+.recent-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 行：34px 单行 —— 图标 + 标题（吃掉剩余宽度）+ 右对齐时间。
+   ⚠️ 高度定死 + 内容不换行：一行就是一行，时间列才会在右端对齐成一条线。 */
+.recent-link {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  height: 34px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-md);
+  color: var(--text-1);
+  text-decoration: none;
+}
+
+.recent-link:hover {
+  background: var(--surface-2);
+}
+
+/* 焦点环只认 :focus-visible（与全局规矩一致），鼠标点击不冒环。 */
+.recent-link:focus-visible,
+.recent-all:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.recent-name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 时间列：定宽右对齐（tabula 数字）—— 参差的行尾比任何装饰都乱。 */
+.recent-time {
+  flex: none;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.recent-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-8) var(--sp-4);
+  text-align: center;
+}
+
+.recent-state-text {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+/* 加载态：轻骨架 —— 复用 skeleton-sweep 那一套（书签卡骨架同款动画），
+   行高与真行一致（34px）：加载完不跳版。 */
+.recent-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-3);
+}
+
+.recent-skeleton-row {
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--surface-3) 37%,
+    var(--surface-2) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-sweep 1.4s ease infinite;
+}
+
+.recent-foot {
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  border-top: 1px solid var(--line);
+}
+
+/* 「查看全部历史」：描边主钮太喧、纯文字太弱 —— 取中间的"整行淡底"，
+   点区高度不低于 24px（与设置页行内按钮同一规矩）。 */
+.recent-all {
+  width: 100%;
+  min-height: 24px;
+  padding: var(--sp-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.recent-all:hover {
+  color: var(--text-1);
+  background: var(--surface-2);
+}
+
+.sidebar[data-collapsed='true'] {
+  padding-left: 0;
+  padding-right: 0;
+  border-right-width: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-inner {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--sp-6) var(--content-pad-x) var(--sp-7);
+  /* 网格而非 flex：三行 auto / 1fr / auto。view-host 恒占第 2 行 ——
+     交叉淡入时新旧两层同格叠放，首屏与稳态都只有一层。
+     第 3 行现在**空着**（页脚「师兄起页 · 轻量书签主页」2026-10-15 撤掉）：
+     模板留三行是因为 view-host 钉的是 grid-row: 2，少一行反而要回头改它。 */
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  flex: 1;
+}
+
+/* ================= 卡片提示气泡 =================
+ *
+ * 为什么存在：原生 `title` 的提示由浏览器绘制，深色下是一块发蓝的黑底白字，
+ * 与两套配色、与暖陶的青柠的气质完全对不上 —— 用户原话"太丑了"，且 CSS 碰不到它。
+ * 逻辑（什么时候出现/消失）在 composables/useCardTip.ts，定位在 lib/tooltip-place.ts，
+ * 这里只管长相。
+ *
+ * 长相与全站"浮在页面上的东西"统一：engine-menu / 右键菜单同一套语言
+ * （surface 底 + line-strong 边 + 阴影），只是圆角小一档 —— 它是个小气泡，
+ * 不是面板。颜色全部走令牌，四套主题（配色 × 明暗）自动各就各位。 */
+
+.card-tip {
+  position: fixed;
+  /* 层级见上面"浮出"一节的比例尺：压内容与浮出，不压菜单与弹窗。 */
+  z-index: 35;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: var(--sp-4) var(--sp-6);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  overflow-wrap: break-word;
+  /* 气泡永远不抢指针 —— "鼠标移到气泡上"不算离开卡片（useCardTip 的前提）。 */
+  pointer-events: none;
+}
+
+/* 小箭头：6px（--sp-3）方块转 45°，只给**朝外**的两条边描边 —— 描四边会在气泡
+   边缘多出一截横线。底色与气泡同色，压住气泡自己的那道边，接缝看不出来。
+   几何是算过的：6px 方块半对角线 4.24px，方块中心落在气泡边缘外 4px
+   （--sp-4 的一半）⇒ 箭头尖端探出 8.24px ≈ tooltip-place.ts 的 TIP_GAP_PX（8px），
+   正好停在卡片沿上，不贴死也不悬空。 */
+.card-tip::after {
+  content: '';
+  position: absolute;
+  width: var(--sp-3);
+  height: var(--sp-3);
+  background: var(--surface);
+  /* 水平位置跟锚点走（placeTip 算的 arrowLeft），被夹紧时也不会留在气泡正中。
+     fallback 50% 是防御：正常永远有 --tip-arrow。 */
+  left: var(--tip-arrow, 50%);
+  margin-left: calc(var(--sp-3) / -2);
+}
+
+/* 落上方（气泡在卡片上面，箭头朝下）：方块压在下边缘，露出右下两条边。 */
+.card-tip[data-placement='top']::after {
+  bottom: calc(var(--sp-4) / -2);
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  transform: rotate(45deg);
+}
+
+/* 落下方（气泡在卡片下面，箭头朝上）：压在上边缘，露出左上两条边。 */
+.card-tip[data-placement='bottom']::after {
+  top: calc(var(--sp-4) / -2);
+  border-left: 1px solid var(--line-strong);
+  border-top: 1px solid var(--line-strong);
+  transform: rotate(45deg);
+}
+
+/* 进场/退场：只动透明度 + 2px 位移，方向跟着落面走 —— 气泡从卡片那一侧贴出来，
+   不是从屏幕角落飞进来（那会让人等）。位移量刻意小：提示是低优先级信息，
+   动得越少越不像在抢焦点。 */
+.card-tip-enter-active,
+.card-tip-leave-active {
+  transition:
+    opacity var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
+}
+
+.card-tip-enter-from,
+.card-tip-leave-to {
+  opacity: 0;
+}
+
+.card-tip[data-placement='top'].card-tip-enter-from,
+.card-tip[data-placement='top'].card-tip-leave-to {
+  transform: translateY(2px);
+}
+
+.card-tip[data-placement='bottom'].card-tip-enter-from,
+.card-tip[data-placement='bottom'].card-tip-leave-to {
+  transform: translateY(-2px);
+}
+
+/* ================= 侧边栏 ================= */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  flex: 0 0 auto;
+  min-width: 0;
+  /* 不再用 divider 分隔品牌区与目录树：留白分组更轻。 */
+  padding: var(--sp-1) var(--sp-3) var(--sp-4);
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: var(--radius-lg);
+  /* 渐变与内部三色都走令牌：四套主题各给各的，
+     别在这里写死色值 —— 写死过一次，youth 主题就只能将就暖色。 */
+  background: var(--brand-gradient);
+  display: grid;
+  place-items: center;
+  color: var(--brand-mark-color);
+  box-shadow: var(--shadow-1);
+}
+
+/* 定稿标识是单一 currentColor 的实心形，没有内部页片与线条 ——
+   旧的两条 .brand-page / .brand-lines 覆盖规则随旧图形一起删掉，
+   --brand-page / --brand-stroke 两个 token 也一并作废（见 tokens.css）。 */
+.brand-mark svg {
+  /* viewBox 已裁到内容 bbox（40 36 176 176，见 App.vue）：符号撑满 svg 高度，
+     20px = 符号实际 20px，在 32px tile 里上下各留 6px。对照预览
+     _probe/brand-mark-centering.png 定的，别凭感觉调。 */
+  width: 20px;
+  height: 20px;
+}
+
+.brand-text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.brand-name {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.4px;
+}
+
+.brand-note {
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.brand[data-narrow='true'] .brand-text,
+.brand[data-narrow='true'] .brand-mark {
+  display: none;
+}
+
+.rail-btn {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  transition: background var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+
+.rail-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.rail-btn:hover {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.sidebar-resize {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  z-index: 3;
+  cursor: col-resize;
+  background: transparent;
+  touch-action: none;
+}
+
+.sidebar-resize::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  transition: background var(--dur-fast) var(--ease-standard);
+}
+
+.sidebar-resize:hover::after,
+.sidebar-resize.dragging::after {
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+body.is-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
+/* ---------- 目录树 ---------- */
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 0 auto;
+}
+
+.nav-branch,
+.nav-children-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* 子级容器：grid 只为让"高度从 0 长到 auto"可以过渡（0fr → 1fr，既有约定）。
+   真正的行栈在 .nav-children-inner 里；收起时 inner 被压到 0 高并裁掉。 */
+.nav-children {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.nav-children-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 展开/收起的过渡：外层管高度（grid 轨道），内层管内容（淡入 + 从父行方向滑出）。
+   时长与侧边栏开合同源（--dur-base / --dur-fast）；reduced-motion 由全局规则清掉。 */
+.nav-tree-enter-active,
+.nav-tree-leave-active {
+  transition: grid-template-rows var(--dur-base) var(--ease-standard);
+}
+
+.nav-tree-enter-active .nav-children-inner,
+.nav-tree-leave-active .nav-children-inner {
+  transition:
+    opacity var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
+}
+
+.nav-tree-enter-from,
+.nav-tree-leave-to {
+  grid-template-rows: 0fr;
+}
+
+.nav-tree-enter-from .nav-children-inner,
+.nav-tree-leave-to .nav-children-inner {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* 子级引导线：从父级图标的中轴垂下，层级一眼可读。
+   --rail-x = 父行左内边距（10 + depth × 13）+ 图标半宽 7，由 SidebarNode.vue 内联；
+   改缩进步长或图标尺寸时，那边和这里要一起改。 */
+.nav-children::before {
+  content: '';
+  position: absolute;
+  left: var(--rail-x, 17px);
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--line-strong);
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 32px;
+  padding: 0 var(--sp-4) 0 var(--sp-5);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+
+/* 悬停是"轻轻亮一下"的色晕，不再整行换 --surface：整树扫过时不该到处发光。 */
+.nav-item:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  color: var(--text);
+}
+
+/* 选中左色条。用 ::before 而不是 box-shadow —— 行上的 box-shadow 被拖拽插入线
+   （drop-before/after 的 inset 线）占着，别打架。 */
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  transition: background var(--dur-fast) var(--ease-standard);
+}
+
+/* 选中 = 左色条 + 淡底 + 主色文字（既有约定；不再整行实心填充）。
+   文字用 --accent-text：它配 --accent-soft 在四套主题下都过了 AA
+   （5.08 / 7.38 / 4.75 / 8.65，数在 既有约定）。 */
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: var(--fw-medium);
+}
+
+.nav-item.active::before {
+  background: var(--accent);
+}
+
+.nav-item.active:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--accent-soft));
+}
+
+/* 行首图标（文件夹 / 回收站）：跟所在行同色系，靠透明度安静一档；状态随行。 */
+.nav-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  opacity: 0.6;
+  transition: opacity var(--dur-fast) var(--ease-standard);
+}
+
+.nav-item:hover .nav-icon {
+  opacity: 0.85;
+}
+
+.nav-item.active .nav-icon {
+  opacity: 1;
+}
+
+.nav-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-count {
+  flex: 0 0 auto;
+  font-size: var(--fs-2xs);
+  min-width: 20px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.nav-chevron {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border-radius: var(--radius-sm);
+  opacity: 0.6;
+  /* 箭头与行树展开同档时长（--dur-base）：内容在长、箭头在转，两个动作要对得上。 */
+  transition:
+    transform var(--dur-base) var(--ease-standard),
+    opacity var(--dur-fast) var(--ease-standard);
+}
+
+.nav-chevron svg {
+  width: 12px;
+  height: 12px;
+}
+
+.nav-item:hover .nav-chevron {
+  opacity: 1;
+}
+
+.nav-chevron.open {
+  transform: rotate(90deg);
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+/* 底部这两块自己成了一组，`margin-top: auto` 归 `.sidebar-bottom` 管；
+   留在 `.sidebar-foot` 上会让它们把剩余空间对半分。 */
+.sidebar-bottom .sidebar-foot {
+  margin-top: 0;
+}
+
+/* 回收站那颗与目录项同形（既有约定 的取向：换一档不该换一种长相）。
+   行首图标走 .nav-icon，与目录行同一套。 */
+.trash-entry {
+  width: 100%;
+  cursor: pointer;
+}
+
+/* 回收站是一屏，不是主区里嵌的一段 —— 它要跟着主区一起滚。 */
+.trash-view {
+  margin-top: var(--sp-5);
+}
+
+.sidebar-foot {
+  margin-top: auto;
+  /* 不再用 divider：与目录树之间靠留白分组。 */
+  padding: var(--sp-7) var(--sp-3) var(--sp-1);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  font-size: var(--fs-2xs);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.sidebar-foot svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  /* 走令牌跟随主题；以前写死的 #68ad95 在暖陶下色相犯冲。 */
+  color: var(--accent-text);
+}
+
+/* ================= 顶栏 ================= */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-7);
+  min-height: 44px;
+}
+
+.search-area {
+  flex: 1;
+  min-width: 120px;
+  max-width: 720px;
+}
+
+.search-box {
+  height: 40px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  /* 胶囊形（原型 01 清爽网格的那一颗）：框内只剩 放大镜 + 输入框 + 尾部一件东西，
+     所以横向留白比原来宽一档，圆角走 pill。 */
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: 0 var(--sp-7);
+  box-shadow: var(--shadow-1);
+  transition: border-color var(--dur-base) var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard);
+}
+
+.search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.search-box > svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  color: var(--text-3);
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-md);
+}
+
+/* 聚焦时**不要**在输入框自己身上再套一圈焦点环。
+   只写上面的 `outline: 0` 是不够的：全局那条 `input:focus-visible`（特异性 0,1,1）
+   比 `.search-input`（0,1,0）高，会把它盖掉 —— 表现就是截图里那圈贴着文字的内边框。
+   而且 Chrome 对文本输入框是"一聚焦就匹配 :focus-visible"，所以**打字时也会亮**，
+   和外层 `.search-box:focus-within` 的 accent 边框 + 柔光环叠成两层框。
+   焦点提示已由容器承担（`:focus-within` 键盘与鼠标都在，不依赖 :focus-visible），
+   这里去掉不丢可访问性 —— 与弹窗里 `.dialog-input:focus-visible` 同一个做法。 */
+.search-input:focus,
+.search-input:focus-visible {
+  outline: none;
+}
+
+.search-input::placeholder {
+  /* 比正文弱一档（--text-3 → --placeholder，AA 上限内的最浅值，
+     算法与四主题数字见 tokens.css 的 --placeholder 注释）。 */
+  color: var(--placeholder);
+}
+
+/* 藏掉 `type="search"` 自带的那个清除按钮（浅色下是 Chrome 画的蓝 ✕）。
+   不藏的话它会和我们自己的 `.search-clear` 并排出现**两个 ✕** ——
+   那是早就存在的（既有约定 修引擎胶囊时才在浅色截图里逮到），不是引擎选择器带来的。
+   键盘 Delete/Backspace 照旧清空，与原生行为一致。 */
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-clear {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  /* ⚠️ `padding: 0` 不是装饰，是修 bug：UA 给 button 的默认内边距是 1px 6px，
+     20px 的圆盘被压成 8px 宽的内容盒，而 11px 的 ✕ 比内容盒还宽 ——
+     溢出时浏览器按"起点对齐"落位（不是居中），于是 ✕ 右偏 1.5px
+     （真机量过：dx=1.5, dy=0，探针 F:/temp/probe-clear-center.mjs）。
+     清掉内边距，内容盒回到 20px，grid 的居中才真的居中。 */
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  color: var(--text-2);
+}
+
+.search-clear svg {
+  width: 11px;
+  height: 11px;
+}
+
+.search-clear:hover {
+  background: var(--line-strong);
+  color: var(--text);
+}
+
+/* 尾部曾有一颗 `/` chip（快捷键提示），2026-10-15 摘掉（既有约定 修订）：
+   它只是装饰却占着输入框尾部一格，快捷键本身照旧、设置页「快捷键」里也写着。 */
+
+/* 搜索引擎选择器（框内右端那颗胶囊，既有约定）。
+   自己做菜单而不是用原生 <select>：闭合态能改、**下拉面板改不了** ——
+   那颗面板由系统绘制（深色下白底灰边、选中行一道系统蓝），和暖陶/青柠两套配色
+   完全不是一回事。代价是键盘与读屏语义得自己接回来：状态机在
+   `lib/choice-menu.ts`（有单测），ARIA 用 menu button 模式，见 EnginePicker.vue。 */
+.engine-wrap {
+  flex: 0 0 auto;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.engine-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background-color: var(--surface-2);
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard),
+    color var(--dur-base) var(--ease-standard);
+}
+
+.engine-btn:hover,
+.engine-btn[aria-expanded='true'] {
+  background-color: var(--surface-3);
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+/* 聚焦不套自己的环：容器的 `.search-box:focus-within` 已经点亮整个框
+   （accent 边框 + 柔光环，键盘鼠标都在）。同 .search-input 的理由。 */
+.engine-btn:focus,
+.engine-btn:focus-visible {
+  outline: none;
+}
+
+.engine-caret {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  color: var(--text-3);
+  transition: transform var(--dur-base) var(--ease-standard);
+}
+
+.engine-caret.open {
+  transform: rotate(180deg);
+}
+
+/* 下拉面板：跟右键菜单同一套语言（surface 底 + line-strong 边 + shadow-3），
+   这样"浮在页面上的东西"全站长得一样。 */
+.engine-menu {
+  position: absolute;
+  top: calc(100% + var(--sp-3));
+  right: 0;
+  z-index: 30;
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-3);
+}
+
+.engine-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-5);
+  width: 100%;
+  padding: var(--sp-5) var(--sp-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
+}
+
+.engine-option:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* 当前生效项：勾 + accent 色。底色的对比度撑不起"这是当前值"这么重要的一件事
+   （accent-soft 落在 surface 上只有 ~1.2:1，见 既有约定 的对比度表），所以靠勾。 */
+.engine-option[aria-checked='true'] {
+  color: var(--accent);
+}
+
+/* 键盘焦点的**可见指示**走内嵌环，不是外嵌：面板 padding 只有 sp-3，
+   外嵌环会被面板边缘压掉一半（global 那条给的是 outline-offset: 2px）。
+   内嵌 -2px 让环落在选项自己的圆角里，任何方向都不会被裁。 */
+.engine-option:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.engine-check {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  color: var(--accent);
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex: 0 0 auto;
+  /* 这组图标**从右边缘往左排**：搜索框是 flex:1 + max-width 720，宽屏上顶栏
+     还有剩余空间 —— 不加这条，图标会贴在搜索框后面、把右边空出一大块。 */
+  margin-left: auto;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text-2);
+  transition: background var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
+}
+
+.icon-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.icon-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* 同步状态点：主页仍然只读，这个点只负责把状态摆出来，点它跳设置页。
+   ⚠️ **只在同步异常时渲染**（既有约定，2026-10-15 修订）：正常 / 没配 / 从没同步过
+   时 `v-if` 就把它摘掉了，DOM 里没有这颗点，不是"透明"也不是"灰色"。
+   所以这里没有默认色、也没有 `data-tone` 分色 —— 出现即红。 */
+.sync-btn {
+  position: relative;
+}
+
+.sync-dot {
+  position: absolute;
+  right: var(--sp-2);
+  top: var(--sp-2);
+  width: var(--sp-3);
+  height: var(--sp-3);
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+/* ================= 内容区 ================= */
+
+.content {
+  padding-top: var(--sp-7);
+  flex: 1;
+}
+
+/* 视图切换的包装层：Transition 的唯一子元素、切换动效的挂靠点。
+   恒占 .main-inner 第 2 行**第 1 列**（1fr 撑满主区，替原来 .content 的 flex:1）——
+   .content 现在长在它里面；交叉淡入时新旧两个 .view-host 叠在同一个格子里。
+   ⚠️ 列必须钉死：只写 grid-row 时，同行的第二个元素会被自动排进"第 2 列" ——
+   实测新旧并排各占一块、footer 也被挤到右上（既有约定 修订记录记了这次回归）。 */
+.view-host {
+  grid-row: 2;
+  grid-column: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-7);
+  margin-bottom: var(--sp-6);
+  min-height: 24px;
+}
+
+.title-line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.crumb {
+  border: 0;
+  background: transparent;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-sm);
+  /* 祖先路径退成小字弱化（既有约定 稿 1）：当前目录名才是标题。 */
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crumb:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.crumb-current {
+  margin: 0;
+  /* 当前目录名是一等标题（既有约定 稿 1）：问候去掉之后，定位感靠它。 */
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-medium);
+  letter-spacing: -0.2px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crumb-sep {
+  color: var(--text-3);
+  opacity: 0.6;
+  font-size: var(--fs-sm);
+}
+
+.count {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  text-align: right;
+}
+
+/* 时段问候 既有约定 加、既有约定 按用户要求移除（连同日期）。标题行现在只有
+   面包屑路径与当前目录名 —— "我在哪"由目录名承担，不再有一句应景话。 */
+
+/* ---------- 分组 ---------- */
+
+.group {
+  margin: 0 0 var(--sp-9);
+}
+
+.group-lead {
+  margin-bottom: var(--sp-8);
+}
+
+.group-title {
+  margin: 0 0 var(--sp-5);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+}
+
+/* ---------- 文件夹块 ---------- */
+
+/* 列公式与 --card-min / --card-gap 都在 `card-grid.css` 里（主页与设置页共用，
+    由两个入口各自 import）—— 那里还解释了为什么下限不能再定高。 */
+.folder-grid {
+  margin-bottom: var(--sp-5);
+}
+
+.folder-tile {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 38px;
+  padding: 0 var(--sp-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  transition: background var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
+}
+
+.folder-tile:hover {
+  background: var(--card-hover);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-1);
+}
+
+.tile-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.tile-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.tile-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-weight: var(--fw-medium);
+}
+
+/* ---------- 卡片右键菜单 ---------- */
+
+.card-menu {
+  position: fixed;
+  z-index: 40;
+  min-width: 200px;
+  max-width: 260px;
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-3);
+}
+
+.card-menu-title {
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-menu-item {
+  display: block;
+  width: 100%;
+  padding: var(--sp-5) var(--sp-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+
+.card-menu-item:hover {
+  background: var(--surface-2);
+}
+
+.card-menu-item:disabled {
+  color: var(--text-3);
+  cursor: default;
+}
+
+/* 确认态才染红：第一下还是普通菜单项，避免"红色"本身被当成已经删了。 */
+.card-menu-item.is-danger {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.card-menu-sep {
+  height: 1px;
+  margin: var(--sp-3) var(--sp-4);
+  background: var(--line);
+}
+
+.card-menu-note {
+  margin: var(--sp-2) 0 0;
+  padding: 0 var(--sp-4) var(--sp-3);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+}
+
+/* ---------- 书签卡片 ---------- */
+
+/* 列公式与 --card-min / --card-gap 都在上面的「卡片网格」段里 —— 那里和骨架屏共用
+   同一条，别在这里再写一份。 */
+
+.bookmark-card {
+  position: relative;
+  min-width: 0;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: var(--sp-4) var(--sp-6);
+  color: inherit;
+  text-decoration: none;
+  /* 非网页协议的卡片是 `<button>`，要把 UA 的居中改回左对齐。 */
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  transition: background var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 56px;
+  /* 入场只动透明度：transform 上若挂 `both` 填充，末帧会盖掉 :hover 的位移，
+     卡片就再也不会"浮"起来了。 */
+  animation: card-in var(--dur-base) var(--ease-standard) both;
+}
+
+.bookmark-card:hover {
+  background: var(--card-hover);
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-2);
+}
+
+.bookmark-card:active {
+  transform: translateY(0);
+}
+
+.site-icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.3px;
+  user-select: none;
+}
+
+.site-icon.small-text {
+  font-size: var(--fs-2xs);
+  letter-spacing: -0.2px;
+}
+
+/* 字母牌：饱和度比旧板略收 —— 奶油底上太艳的色块会显得吵。 */
+.site-icon.is-fallback {
+  background: hsl(var(--icon-hue, 30) 52% 90%);
+  color: hsl(var(--icon-hue, 30) 44% 30%);
+}
+
+[data-theme='warm-dark'] .site-icon.is-fallback {
+  background: hsl(var(--icon-hue, 30) 30% 22%);
+  color: hsl(var(--icon-hue, 30) 55% 72%);
+}
+
+/* youth-dark 的字母牌跟着配色的色相走（绿），不跟暖陶晨光的暖棕走。 */
+[data-theme='youth-dark'] .site-icon.is-fallback {
+  background: hsl(var(--icon-hue, 140) 26% 20%);
+  color: hsl(var(--icon-hue, 140) 45% 72%);
+}
+
+.site-favicon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.site-name {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================= 状态面板 ================= */
+
+.state-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--sp-10) var(--sp-7);
+  text-align: center;
+  color: var(--text-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-xl);
+  background: var(--surface-2);
+}
+
+.state-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: var(--sp-5);
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  color: var(--text-3);
+}
+
+.state-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.state-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+.state-desc {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  max-width: 42ch;
+}
+
+.state-actions {
+  display: flex;
+  gap: var(--sp-4);
+  justify-content: center;
+  margin-top: var(--sp-7);
+}
+
+.state-panel.is-error {
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: var(--danger-soft);
+}
+
+.state-panel.is-error .state-icon {
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  color: var(--danger);
+}
+
+.ghost-btn {
+  height: 32px;
+  padding: 0 var(--sp-7);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  transition: border-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+
+.ghost-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- 拖拽整理 ---------- */
+
+/*
+ * 反馈只有三种：压暗拖起来的那个、一条插入线、"放进 X"的环 + 标签。
+ * 全部用 box-shadow / outline 画，**不动布局** —— 拖动过程中列表要是跟着抖，
+ * 落点会跟着手指跑偏，误放率立刻上去。
+ */
+
+/*
+ * 拖动把手上关掉文字选择：按下并移动时若浏览器开始"选文字"，拖起来会顺手带走一片高亮。
+ *
+ * **实测澄清**（2026-10-12，Playwright + 真实 Chrome）：它不是"文件夹拖不动"的原因 ——
+ * 把 user-select 改回 text，`dragstart` 照样在 `<h2>` / `<button>` 上触发、move 照样发生。
+ * 真正的原因在落点几何（见 `lib/drag/drop-zone.ts`）。这条留着是因为它确实改善手感，
+ * 代价是拖拽开着时选不中目录名。别再把它当"修复了拖拽"来读。
+ */
+.shell[data-drag='on'] .group-title,
+.shell[data-drag='on'] .folder-tile,
+.shell[data-drag='on'] .nav-item {
+  user-select: none;
+}
+
+.bookmark-card.is-dragging,
+.folder-tile.is-dragging,
+.nav-item.is-dragging,
+.group-title.is-dragging {
+  opacity: 0.45;
+}
+
+/* 插入线：横向铺开的网格用左右竖条，纵向的（侧边栏、分组）用上下横条。 */
+.bookmark-card.drop-before,
+.folder-tile.drop-before {
+  box-shadow: inset 3px 0 0 0 var(--accent), var(--shadow-2);
+}
+
+.bookmark-card.drop-after,
+.folder-tile.drop-after {
+  box-shadow: inset -3px 0 0 0 var(--accent), var(--shadow-2);
+}
+
+.nav-item.drop-before,
+.group.drop-before {
+  box-shadow: inset 0 3px 0 0 var(--accent);
+}
+
+.nav-item.drop-after,
+.group.drop-after {
+  box-shadow: inset 0 -3px 0 0 var(--accent);
+}
+
+/* "放进去"：一圈环 + 一个写明去处的标签。光靠高亮说不清松手会发生什么。 */
+.nav-item.drop-inside,
+.folder-tile.drop-inside,
+.group.drop-inside {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* 行内那两类（文件夹块、侧边栏行）是 flex 容器，标签当最后一个子项，不动布局。 */
+.nav-item.drop-inside::after,
+.folder-tile.drop-inside::after {
+  content: attr(data-drop-label);
+  flex: 0 0 auto;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-pill);
+  background: var(--accent-text);
+  color: var(--accent-on);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
+/* 分组是**整节**作为落点，标签挂到右上角，免得跑到节尾去。 */
+.group {
+  position: relative;
+}
+
+.group.drop-inside::after {
+  content: attr(data-drop-label);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-pill);
+  background: var(--accent-text);
+  color: var(--accent-on);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
+/* 上一次移动的撤销条。它是持久的（刷新后还在），所以做得克制，别长期占视线。 */
+.drag-undo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+  padding: var(--sp-3) var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.drag-undo-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drag-undo .ghost-btn {
+  flex: 0 0 auto;
+}
+
+/* ---------- 新建：入口与悬停新建卡（既有约定，卡片部分是它的） ----------
+   ⚠️ 这一节原来还住着内联编辑器（`.editor-*`），既有约定 把新建/改名换成弹窗后
+   那些规则删了。**但这一节剩下的两条不是它的附属** —— 它们是卡片网格与 section
+   标题行的东西，删掉会立刻把主页弄坏（2026-10-14 真删坏过一次：`.new-tile` 的
+   尺寸一没，网格那张「+ 新建」撑成巨块，同一行其它卡片跟着被拉高）。 */
+
+/*
+ * 标题行右侧的「＋新建」：**指针设备上悬停才显现**（既有约定，用户原话
+ * "鼠标移动到才显示"）。两条兜底保证它不会从某些用户眼前彻底消失：
+ *   ① :focus-within —— 键盘 Tab 到它就现形；
+ *   ② @media (hover: none) —— 触屏等无 hover 设备常显。
+ * 过渡只动透明度，不碰布局。
+ */
+.new-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex: 0 0 auto;
+  height: 26px;
+  padding: 0 var(--sp-5);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-standard);
+}
+
+.section-head:hover .new-entry,
+.new-entry:focus-within {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .new-entry {
+    opacity: 1;
+  }
+}
+
+.new-entry svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+
+/*
+ * 网格末尾的悬停新建卡。
+ *
+ * 默认完全透明且**不接指针**：它占着网格最后一个格子，看不见却还能点的话，
+ * 就会在"什么也看不见的地方"吞掉一次点击。鼠标移进网格才显形。
+ * 键盘走 :focus-visible 同样显形（Tab 能移到它），所以它不是纯鼠标设施。
+ */
+.new-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  min-height: 56px;
+  padding: var(--sp-4) var(--sp-6);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--text-3);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--dur-base) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
+}
+
+/* 文件夹网格里的那张与文件夹块同高，别在网格里戳出一个高个子。 */
+.new-tile.is-folder {
+  min-height: 38px;
+}
+
+.bookmark-grid:hover .new-tile,
+.folder-grid:hover .new-tile,
+.new-tile:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.new-tile:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.new-tile svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
+/* ================= 公共弹窗壳 =================
+   全站唯一的模态。间距按**浮层卡片**的档位给，不是页内元素的档位 ——
+   后者就是"弹窗难看"的来源（内边距 10px / 按钮高 24px，见 既有约定 背景）。
+   壳本身（背板、标题区、键盘）在 components/AppDialog.vue；
+   下面这些是壳里的**内容词汇**：按钮 / 输入框 / 统计 / 清单 / 警告条，
+   两个用户（删除文件夹、将来的重置设置）直接拿去用，别再各写一份。 */
+
+.dialog-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4);
+  background: var(--overlay);
+}
+
+.dialog-card {
+  width: min(480px, 100%);
+  max-height: calc(100vh - 2 * var(--sp-4));
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  padding: var(--sp-9);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-2xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-modal);
+}
+
+.dialog-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-5);
+}
+
+/* 图标块：常规用 16% 强调色，破坏性用 danger-soft —— 与选中态同一个配方。 */
+.dialog-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+.dialog-card[data-tone='danger'] .dialog-mark {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.dialog-mark svg {
+  width: 22px;
+  height: 22px;
+}
+
+.dialog-headings {
+  min-width: 0;
+}
+
+.dialog-eyebrow {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.dialog-sub {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+.dialog-close {
+  margin-left: auto;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  /* UA 给 button 的默认内边距会把 28px 的圆盘压扁，图标按起点对齐 —— 见 .search-clear。 */
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+}
+
+.dialog-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.dialog-close svg {
+  width: 14px;
+  height: 14px;
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-7);
+}
+
+.dialog-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+}
+
+/* 动作区：默认靠右（提示在左、按钮在右，与 M5 模板同一节奏）。 */
+.dialog-actions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--sp-4);
+}
+
+.dialog-btn {
+  min-height: 38px;
+  padding: 0 var(--sp-7);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--fs-md);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
+}
+
+.dialog-btn:hover:not(:disabled) {
+  border-color: var(--text-3);
+  color: var(--text);
+}
+
+.dialog-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* 实心主按钮。墨色必须分主题（--on-accent / --on-danger，见 tokens.css 的对比度注释）。 */
+.dialog-btn.is-primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: var(--fw-medium);
+}
+
+.dialog-btn.is-danger {
+  border-color: transparent;
+  background: var(--danger);
+  color: var(--on-danger);
+  font-weight: var(--fw-medium);
+}
+
+/* 悬停加深 / 变亮要**顺着主题方向**：浅色主题加深（白字更稳），
+   深色主题变亮（深字更稳）。反着来会把对比度做丢。 */
+[data-theme$='light'] .dialog-btn.is-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 88%, black);
+}
+
+[data-theme$='dark'] .dialog-btn.is-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 88%, white);
+}
+
+[data-theme$='light'] .dialog-btn.is-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 88%, black);
+}
+
+[data-theme$='dark'] .dialog-btn.is-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 88%, white);
+}
+
+/* 输入框：M5 的处理是**描边不填充** —— 深色下大块填充会显脏。 */
+.dialog-input {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 var(--sp-6);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-md);
+}
+
+.dialog-input::placeholder {
+  color: var(--placeholder);
+}
+
+.dialog-input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.dialog-label {
+  font-size: var(--fs-sm);
+  color: var(--text);
+  font-weight: var(--fw-medium);
+}
+
+.dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.dialog-hint {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+/* 统计：大数字 + 一句口径。破坏性操作用 danger 数字，否则用正文色。 */
+.dialog-stats {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-5);
+}
+
+.dialog-num {
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.dialog-card[data-tone='danger'] .dialog-num {
+  color: var(--danger);
+}
+
+.dialog-num-label {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.dialog-lead {
+  margin: 0;
+  font-size: var(--fs-md);
+  color: var(--text-2);
+  line-height: 1.65;
+}
+
+.dialog-lead b {
+  color: var(--text);
+  font-weight: var(--fw-medium);
+}
+
+/* 清单：行分隔，不铺底色（铺底色那一版看着像没对齐的引用块）。 */
+.dialog-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.dialog-item svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  color: var(--text-3);
+}
+
+/* 一行文字说明：替代原来的粉色警告盒（既有约定 修订）。
+   删掉整块盒子是用户 2026-10-14 的要求（"去掉文字提示"），但**事实必须留** ——
+   "这次删除能不能找回"是 既有约定 定的披露，没开同步时删了就是真没了。
+   所以压成一行、去掉底色，用字号与颜色而不是色块来区分主次。 */
+.dialog-note {
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+.dialog-note.is-danger {
+  color: var(--danger);
+}
+
+/* ---------- 表单型弹窗的控件（既有约定，新建 / 改名用） ---------- */
+
+/* 两选一的分段（书签 / 文件夹）。与设置页的 segmented 同一形状，小一号。 */
+.dialog-seg {
+  display: flex;
+  gap: var(--sp-2);
+  padding: var(--sp-1);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.dialog-seg-btn {
+  flex: 1;
+  min-height: 32px;
+  padding: 0 var(--sp-5);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
+}
+
+.dialog-seg-btn:hover {
+  color: var(--text);
+}
+
+.dialog-seg-btn[data-on='true'] {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: var(--fw-medium);
+  box-shadow: var(--shadow-1);
+}
+
+/* 目录选择器：**常显的可滚动列表**，不是下拉面板。
+   ⚠️ 别改回 absolute 定位的面板 —— `.dialog-card` 是 `overflow: auto`，
+   绝对定位的子元素出不了卡片边界（真机截图里被裁掉过）。
+   键盘状态机在 lib/choice-menu.ts。 */
+.dialog-menu {
+  max-height: 176px;
+  overflow: auto;
+  padding: var(--sp-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+}
+
+.dialog-menu:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.dialog-menu-item {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: 0 var(--sp-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* 键盘高亮用 2px 内嵌环，**不铺 accent-soft 底**：那一档会把对比度压到不及格
+   （既有约定 的同一笔账，见 EnginePicker 的注释）。 */
+.dialog-menu-item[data-on='true'] {
+  box-shadow: inset 0 0 0 2px var(--accent);
+  color: var(--text);
+}
+
+.dialog-menu-item[aria-checked='true'] .dialog-menu-title {
+  color: var(--accent-text);
+  font-weight: var(--fw-medium);
+}
+
+.dialog-menu-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dialog-menu-count {
+  margin-left: auto;
+  flex: none;
+  font-size: var(--fs-2xs);
+  color: var(--text-3);
+}
+
+.dialog-error {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--danger);
+}
+
+.dialog-skeleton {
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+}
+
+.dialog-skeleton.is-wide {
+  width: 78%;
+}
+
+.dialog-skeleton.is-mid {
+  width: 54%;
+}
+
+.dialog-skeleton.is-narrow {
+  width: 36%;
+}
+
+/* ---------- 骨架屏 ---------- */
+
+/* 列公式不在这里：见上面的「卡片网格」段，它和 .bookmark-grid 共用同一条。 */
+
+.skeleton-card {
+  min-height: 56px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--surface-3) 37%,
+    var(--surface-2) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-sweep 1.4s ease infinite;
+}
+
+@keyframes skeleton-sweep {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* 打开新标签页 / 切换视图（换目录、进出搜索态、进回收站）时的那一下"轻轻铺开"。
+   交叉淡入由 .view-host 上的 view-switch 过渡驱动：新旧两层同时
+   --dur-base 淡入淡出（叠在 .main-inner 网格同一行，新的在上）；首屏 appear
+   = --dur-slow（打开新标签页保持原来的 240ms 手感与 6px 上浮）。
+   ⚠️ 切换的进场是**纯淡入、不带上浮** —— 两层叠着时任何位移都让文字看起来在抖；
+   卡片错峰也只属于首屏：切换时卡片的 card-in 被 App.vue 的 onViewSwitchEnter
+   整层拆掉（差序入场会在"还没到的卡"处露出旧卡 = 花斑）。 */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes view-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* 离开段：纯透明度（位移只属于"进场"这件事）。 */
+@keyframes view-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* 交叉淡入 = 离开与进入同时发生，所以没有 mode="out-in"。
+   两层位置由 .view-host 的 grid-row: 2 保证；这里管层级、指针与动画。 */
+.view-switch-enter-active {
+  z-index: 1;
+  animation: view-fade-in var(--dur-base) var(--ease-standard);
+}
+
+/* 离开层三件套：pointer-events 在这里；inert 与 aria-hidden 在 App.vue 的
+   onViewSwitchLeave —— 卡片是 <a>，消失中的旧目录不该被 Tab / 读屏 / 鼠标摸到。 */
+.view-switch-leave-active {
+  animation: view-out var(--dur-base) var(--ease-standard);
+  pointer-events: none;
+}
+
+.view-switch-appear-active {
+  animation: page-in var(--dur-slow) var(--ease-standard);
+}
+
+/* 错峰只给前 8 张：再往后总时长失控，且一屏之外看不见。 */
+.bookmark-card:nth-child(1) {
+  animation-delay: 0ms;
+}
+.bookmark-card:nth-child(2) {
+  animation-delay: 24ms;
+}
+.bookmark-card:nth-child(3) {
+  animation-delay: 48ms;
+}
+.bookmark-card:nth-child(4) {
+  animation-delay: 72ms;
+}
+.bookmark-card:nth-child(5) {
+  animation-delay: 96ms;
+}
+.bookmark-card:nth-child(6) {
+  animation-delay: 120ms;
+}
+.bookmark-card:nth-child(7) {
+  animation-delay: 144ms;
+}
+.bookmark-card:nth-child(8) {
+  animation-delay: 168ms;
+}
+
+.loading-text {
+  margin: var(--sp-7) 0 0;
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+/* ================= 回收站（既有约定：改主页卡片网格） ================= */
+
+/*
+ * 历史坑（既有约定 记）：这套样式原本住在 TrashPanel.vue 的 <style scoped> 里，
+ * 既有约定 任务 3 重写该组件时（29ec665）把整个样式块弄丢了 —— 回收站那一屏
+ * 此后的渲染全是浏览器默认样式。现在收进 style.css 与主页其他组件样式同住，
+ * **别再把它拆回组件的 scoped 块**：主页的组件样式统一在 style.css，拆走只会再丢一次。
+ *
+ * 既有约定：列表卡 → 卡片网格（与主页 .bookmark-card / .folder-tile 同一套语言），
+ * 信息减密 —— URL 只进卡片 tooltip；「谁删的」收敛为 本机/其他设备/未知设备；
+ * 底部大段说明收进 <details>。计数 chip 撤掉（既有约定 的去计数取向，侧边栏
+ * 入口那颗仍在）。
+ */
+
+.trash {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.trash-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  flex-wrap: wrap;
+  min-height: 40px;
+}
+
+.trash-title-main {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.4px;
+  color: var(--text);
+}
+
+.trash-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.trash-section-title {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+.trash-hint {
+  margin: 0 0 var(--sp-5);
+  max-width: 76ch;
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+  color: var(--text-2);
+}
+
+/* ---------- 卡片网格 ---------- */
+
+/* 比主页卡片宽一档：卡内是三行结构（图标+标题 / meta / 按钮），列数随容器自适应。 */
+.trash-card-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--sp-4);
+  /* 展开分组、卡片高度不一时不拉齐整行 */
+  align-items: start;
+}
+
+.trash-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  transition: border-color var(--dur-fast) var(--ease-standard),
+    background var(--dur-fast) var(--ease-standard);
+}
+
+/* 卡片不是链接，不上浮；只给一点边框反馈。 */
+.trash-card:hover {
+  border-color: var(--line-strong);
+}
+
+/* 嵌套成员（一次删除带来的子项）轻一档：它是"随父一起来的"，不是主体。 */
+.trash-card.is-nested {
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+/* 待同步档染一层暖橘：它"还没离开这台机器"，与已进同步状态的墓碑要分得开。 */
+.trash-card.is-pending {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+/* 嵌套的待同步卡：两档降级同时生效 —— 暖橘兑一档 surface-2（圆角与投影已走嵌套档），
+   "随父一来的"与"还没离开本机"两个信号都留着。 */
+.trash-card.is-nested.is-pending {
+  background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface-2));
+}
+
+.trash-card-top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+/* 文件夹图标槽：与书签卡片的 .site-icon 同箱同径，两种卡片第一列对齐。 */
+.trash-card-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-md);
+  color: var(--accent);
+}
+
+.trash-card-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.trash-card-title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trash-chip {
+  flex: 0 0 auto;
+  font-size: var(--fs-2xs);
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+/* 待同步 chip 坐在染了暖橘的卡上：底色换实色才压得住。 */
+.trash-chip-pending {
+  background: var(--surface);
+  color: var(--accent-text);
+}
+
+/* 组根的「另有 n 项」chip 同时是展开/收起开关（键盘可达）。 */
+.trash-group-chip {
+  flex: 0 0 auto;
+  border: 0;
+  font-family: inherit;
+  font-size: var(--fs-2xs);
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  color: var(--text-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
+}
+
+.trash-group-chip:hover {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.trash-card-meta {
+  margin: 0;
+  font-size: var(--fs-2xs);
+  line-height: 1.6;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trash-card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.trash-card-note {
+  margin: 0;
+  font-size: var(--fs-2xs);
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+/* 卡内的预览注释放掉外边距 —— 卡片自己是 flex column + gap，不需要段落间距。
+   特异性（0,2,0）压过 .trash-note-danger / .trash-note-plan（0,1,0）的 margin-top。 */
+.trash-card .trash-note {
+  margin-top: 0;
+  font-size: var(--fs-2xs);
+}
+
+.trash-btn {
+  height: 30px;
+  padding: 0 var(--sp-6);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard),
+    background var(--dur-fast) var(--ease-standard);
+}
+
+.trash-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.trash-btn:disabled {
+  color: var(--text-3);
+  background: var(--surface-2);
+  cursor: default;
+}
+
+/* 「彻底删除」是回收站里唯一不可逆的动作，常驻 danger 色 —— 与删除确认
+   "染红"是同一条取向：颜色本身就是警告，不靠 hover 才提醒。 */
+.trash-btn-danger {
+  color: var(--danger);
+}
+
+.trash-btn-danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* 头顶那颗「全部清除」：与单项彻底删除同色，量级更大所以更克制（不填底）。 */
+.trash-danger-btn {
+  height: 30px;
+  padding: 0 var(--sp-6);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--danger);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-standard),
+    background var(--dur-fast) var(--ease-standard);
+}
+
+.trash-danger-btn:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.trash-danger-btn:disabled {
+  color: var(--text-3);
+  cursor: default;
+}
+
+.trash-note {
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+  color: var(--text-2);
+}
+
+/* 两类带底色的提示：危险（purge 预览）用 danger-soft，计划（restore 预览）用 accent-soft。
+   正文都用 --text：染色的只是边框与底色，文字对比度不靠颜色硬撑。 */
+.trash-note-danger {
+  margin-top: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--danger-soft);
+  color: var(--text);
+}
+
+.trash-note-plan {
+  margin-top: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.trash-error {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--danger);
+}
+
+/* ---------- 折叠的大段说明 ---------- */
+
+.trash-details {
+  margin-top: var(--sp-3);
+}
+
+.trash-details-summary {
+  width: fit-content;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-md);
+  color: var(--accent-text);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-standard);
+}
+
+.trash-details-summary:hover {
+  background: var(--accent-soft);
+}
+
+.trash-details-list {
+  margin: var(--sp-4) 0 0;
+  padding-left: var(--sp-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  max-width: 76ch;
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+  color: var(--text-2);
+}
+
+/* 空回收站与主页其他空状态同一长相（虚线框 + 暖米底）。 */
+.trash-empty {
+  margin: 0;
+  padding: var(--sp-9) var(--sp-6);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-xl);
+  background: var(--surface-2);
+}
+
+/* 空态里的指路句：小一格、弱一格 —— 它是路标，不是主角。 */
+.trash-empty-hint {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-6);
+  border: none;
+  background: none;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+
+/* ================= 响应式 ================= */
+
+@media (max-width: 900px) {
+  .shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex: 0 0 auto;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-5);
+    padding: var(--sp-5) var(--sp-7);
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    overflow: visible;
+  }
+
+  .brand {
+    padding: 0;
+    border-bottom: 0;
+    flex: 0 0 auto;
+  }
+
+  .sidebar-resize {
+    display: none;
+  }
+
+  .sidebar-nav {
+    flex: 1 1 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-3);
+    overflow-x: auto;
+    padding-bottom: var(--sp-1);
+  }
+
+  .nav-branch {
+    display: contents;
+  }
+
+  .nav-branch > .nav-children {
+    display: none;
+  }
+
+  .nav-item {
+    flex: 0 0 auto;
+    min-height: 30px;
+    font-size: var(--fs-sm);
+  }
+
+  .nav-chevron {
+    display: none;
+  }
+
+  .sidebar-foot {
+    display: none;
+  }
+
+  .main-inner {
+    padding: var(--sp-5) var(--sp-7) var(--sp-6);
+  }
+}
+
+@media (max-width: 460px) {
+  .main-inner {
+    padding: var(--sp-4) var(--sp-5) var(--sp-5);
+  }
+
+  /* 手机上把列宽下限再降一档，好让 2 列放得进去。
+     原来是硬写 `repeat(2, …)` —— 那会把用户的设置整个盖掉；改成调下限之后，
+     `--cards-per-row` 仍然是上限，只是窄屏上够不到它而已。 */
+  .bookmark-grid,
+  .skeleton-grid,
+  .folder-grid {
+    --card-min: 100px;
+  }
+
+  .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-2);
+  }
+
+  .hint {
+    text-align: left;
+  }
+}

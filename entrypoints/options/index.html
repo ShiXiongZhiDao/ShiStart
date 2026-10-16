@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="youth-light">
+  <head>
+    <!-- 与 newtab 一致：预置主题 = 默认配色，读完后由 useSettings 校正。 -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 设置页开**整页标签页**，不用浏览器那个嵌入式选项小窗。
+         这条 meta 是唯一生效的口子：WXT 把 html 里的 meta 解析成入口 options，
+         再据此写 manifest 的 options_ui.open_in_tab。写在 wxt.config.ts 的
+         `manifest.options_ui` 里**会被 WXT 自动生成的那条覆盖**（实测仍是 false）。
+         动机：那个小窗真机量过只有 400×572，而这份设置页是按 168px 左导航 +
+         980px 内容设计的；状态点那条路本来就是 chrome.tabs.create 整页打开 ——
+         同一份 UI 两种壳，用户看到的就是"两个设置页"。 -->
+    <meta name="manifest.open_in_tab" content="true" />
+    <title>师兄起页 · 设置</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

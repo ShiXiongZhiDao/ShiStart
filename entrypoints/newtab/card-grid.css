@@ -1,0 +1,77 @@
+/*
+ * 卡片网格列公式—— **主页与设置页共用**（照 bg-pattern.css 的先例：
+ * 两边入口都 `import` 这个文件，所以列公式只有这一份）。
+ *
+ * **最多 `--cards-per-row` 列**，且列宽不低于 `--card-min`。
+ *
+ * 写法：把「每列至少 (100% - 全部间隙) / N」与「至少 --card-min」取**大者**当
+ * minmax 的下界，auto-fill 就自然算出 min(N, 容器塞得下的列数)：
+ *   宽屏：下界 = (100%-间隙)/N ⇒ 正好 N 列；
+ *   窄屏：算出来的比 --card-min 还小 ⇒ 下界顶到 --card-min ⇒ 自动减列。
+ * 于是**不用为每种分辨率堆一档媒体查询**。
+ *
+ * ⚠️ 三处网格共用这一条，不是复制三份：`.skeleton-grid` 只要和 `.bookmark-grid`
+ * 差一点，书签读完那一帧整屏就会跳一下（骨架屏存在的全部意义就是别跳）。
+ *
+ * ⚠️ `--card-min` 的数字是**滑块的行程能不能跑满**的关键 —— 定得太高会让
+ * 4–12 里的一多半档位毫无作用（2026-10-15 实测：180px 时 1080p 最多只能到 8 列，
+ * 设 9/10/11/12 全都还是 8）。现在取 120px：1080p 上 4–12 全程有效。
+ *
+ * ⚠️ 导入顺序：必须在 newtab/style.css **之前**，否则 style.css 里那条窄屏
+ * 媒体查询（把 --card-min 再降一档）会被这里盖掉。
+ */
+
+.bookmark-grid,
+.skeleton-grid,
+.folder-grid,
+.grid-probe {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(
+      max(
+        var(--card-min),
+        calc((100% - (var(--cards-per-row) - 1) * var(--card-gap)) / var(--cards-per-row))
+      ),
+      1fr
+    )
+  );
+  gap: var(--card-gap);
+}
+
+/* 书签卡与骨架屏同一套尺寸（上面那条注释里说清楚了为什么必须一样）。 */
+.bookmark-grid,
+.skeleton-grid,
+.grid-probe {
+  --card-min: 120px;
+  --card-gap: var(--sp-5);
+}
+
+/* 文件夹瓦片：比书签卡宽一档，间隙小一档 —— 它是"一块目录"不是一条书签。 */
+.folder-grid {
+  --card-min: 150px;
+  --card-gap: var(--sp-4);
+}
+
+/*
+ * 量尺（只在设置页用）：一个**真的**网格，铺到"主页内容区"那么宽，让浏览器
+ * 自己算出当前窗口实际能排几列 —— 设置页只读它的轨道数，不重新实现一遍公式
+ * （重新实现一遍就是两处真值，迟早对不上）。
+ *
+ * 绝对定位是刻意的：它要能有 1620px 宽却不撑开设置页的卡片。
+ */
+.grid-probe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+  width: min(
+    var(--content-max),
+    calc(100vw - var(--sidebar-taken, 0px) - var(--content-pad-x) * 2)
+  );
+}
+
+.grid-probe > * {
+  height: 1px;
+}
