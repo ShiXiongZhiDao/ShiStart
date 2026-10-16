@@ -1,4 +1,4 @@
-![师兄起页](public/icon/128.png)
+<p align="center"><img src="https://raw.githubusercontent.com/ShiXiongZhiDao/ShiStart/main/public/icon/128.png" alt="师兄起页" width="88"></p>
 
 <h1 align="center">师兄起页 ShiStart</h1>
 

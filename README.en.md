@@ -1,4 +1,4 @@
-![ShiStart](public/icon/128.png)
+<p align="center"><img src="https://raw.githubusercontent.com/ShiXiongZhiDao/ShiStart/main/public/icon/128.png" alt="ShiStart" width="88"></p>
 
 <h1 align="center">ShiStart</h1>
 
