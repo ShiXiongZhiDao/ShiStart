@@ -1,4 +1,4 @@
-<p align="center"><img src="public/icon/128.png" alt="ShiStart" width="88"></p>
+![ShiStart](public/icon/128.png)
 
 <h1 align="center">ShiStart</h1>
 

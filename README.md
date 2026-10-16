@@ -1,4 +1,4 @@
-<p align="center"><img src="public/icon/128.png" alt="师兄起页" width="88"></p>
+![师兄起页](public/icon/128.png)
 
 <h1 align="center">师兄起页 ShiStart</h1>
 
