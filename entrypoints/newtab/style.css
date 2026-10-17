@@ -1641,33 +1641,97 @@ body.is-resizing {
   opacity: 0.45;
 }
 
-/* 插入线：横向铺开的网格用左右竖条，纵向的（侧边栏、分组）用上下横条。 */
+/*
+ * 落点反馈（既有约定 定的三种，2026-10-17 加强）。横向铺开的网格用左右竖条，
+ * 纵向的（侧边栏、分组）用上下横条。
+ *
+ * **加强的由来**：原来只有一条 `inset 3px` 的内阴影线 —— 贴在内侧、被圆角吃掉一截，
+ * 颜色又和卡片 hover 时的 border-color 撞在一起，在一排卡片里几乎看不见
+ * （用户报"变色提示还是不太明显"，附截图）。现在拆成两层，各答一个问题：
+ *   「这里能落吗」→ 目标卡片换淡主色底 + 一圈外光晕
+ *   「落到哪一边」→ 一根 7px 实心主色条，只在左或右一侧
+ *
+ * ⚠️ 一律**不用** transform / padding / margin / scale 做落点反馈：那会改 rect，
+ *    dragover 期间 rect 一变，落点判定就跟着手指抖（既有约定 那种偏一位的 bug 就长在这）。
+ */
+
+/*
+ * 横向：目标卡片整块着色。
+ *
+ * 刻意**不做粗描边**：四边同样亮的框线会盖掉方向信息，读者只会觉得"这张卡的边框变粗了"。
+ * 这里只管底与边框，box-shadow 留给下面按方向分支那两条（同特异性、写在后面，会盖掉这里）。
+ */
+.bookmark-card.drop-before,
+.bookmark-card.drop-after,
+.folder-tile.drop-before,
+.folder-tile.drop-after {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/*
+ * 横向：那根方向条。
+ *
+ * ⚠️ **必须用 inset box-shadow 画在卡片内侧，不能用伪元素画到外侧。**
+ *    `.bookmark-card` 有 `content-visibility: auto`，它隐含 paint containment ——
+ *    元素自己的内容**画不出自己的边界**。第一版把条放在 left: -5px（卡片外），
+ *    伪元素的背景与 box-shadow 全被裁掉，看上去就是"根本没画"；
+ *    而卡片的 outset 阴影照常可见（那是元素自身绘制，不受自身裁剪），
+ *    于是极容易误判成"伪元素没生成"去查 calc 语法。
+ *    `getComputedStyle(el, '::before')` 也读不出这件事：值全都对，只是没画出来。
+ *    换成 inset 之后条落在元素内部，不受裁剪；代价是它只能贴边、不能悬在网格缝里。
+ *
+ * 宽度 3px → 7px，第二层 10px 的淡色把实心边和卡片面接上（避免一条硬边像渲染接缝）。
+ * 两层都压在 12px 以内 —— 卡片 padding-left 就是 12px，再宽会啃到图标。
+ */
 .bookmark-card.drop-before,
 .folder-tile.drop-before {
-  box-shadow: inset 3px 0 0 0 var(--accent), var(--shadow-2);
+  box-shadow:
+    inset 7px 0 0 0 var(--accent),
+    inset 10px 0 0 0 color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 18px 2px color-mix(in srgb, var(--accent) 30%, transparent),
+    var(--shadow-2);
 }
 
 .bookmark-card.drop-after,
 .folder-tile.drop-after {
-  box-shadow: inset -3px 0 0 0 var(--accent), var(--shadow-2);
+  box-shadow:
+    inset -7px 0 0 0 var(--accent),
+    inset -10px 0 0 0 color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 18px 2px color-mix(in srgb, var(--accent) 30%, transparent),
+    var(--shadow-2);
 }
 
+/* 纵向（侧边栏行、分组节）：横条加粗到 4px + 外发光，行本身也着色。
+   行的 ::before 被"选中左色条"占着，所以继续走 box-shadow。 */
 .nav-item.drop-before,
 .group.drop-before {
-  box-shadow: inset 0 3px 0 0 var(--accent);
+  box-shadow:
+    inset 0 4px 0 0 var(--accent),
+    0 -2px 12px -2px color-mix(in srgb, var(--accent) 60%, transparent);
 }
 
 .nav-item.drop-after,
 .group.drop-after {
-  box-shadow: inset 0 -3px 0 0 var(--accent);
+  box-shadow:
+    inset 0 -4px 0 0 var(--accent),
+    0 2px 12px -2px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.nav-item.drop-before,
+.nav-item.drop-after {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 /* "放进去"：一圈环 + 一个写明去处的标签。光靠高亮说不清松手会发生什么。 */
 .nav-item.drop-inside,
 .folder-tile.drop-inside,
 .group.drop-inside {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+  background: var(--accent-soft);
 }
 
 /* 行内那两类（文件夹块、侧边栏行）是 flex 容器，标签当最后一个子项，不动布局。 */
