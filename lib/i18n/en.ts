@@ -214,6 +214,22 @@ export const en: Record<MessageKey, string> = {
   'menu.deleteFolderNoteFinal':
     'Sync is off, so once deleted it <strong>cannot be recovered</strong>. Click again to confirm.',
   // Delete preview dialog (既有约定 decision 2)
+  'home.select.item': 'Select {title}',
+  'home.selection.count': '{n} selected',
+  'home.selection.open': 'Open',
+  'home.selection.openWindow': 'Open in new window',
+  'home.selection.delete': 'Delete',
+  'home.selection.cancel': 'Cancel',
+  'home.selection.openSkipped': 'Skipped {n} link(s) that cannot be opened directly.',
+  'home.selection.deleteTitle': 'Delete {n} item(s)?',
+  'home.selection.deleteBody': '{n} of them are folders; their contents go too.',
+  'home.selection.deleteBodyPlain': 'All selected items are bookmarks; they can be restored from the trash after sync.',
+  'home.selection.deleteDone': 'Deleted {n} item(s). Syncing — you can restore them from the trash.',
+  'home.selection.deleteFailed': 'Delete failed: {reason}',
+  'home.selection.openNothing': 'Nothing selected can be opened directly.',
+  'home.selection.openFailed': 'Open failed: {reason}',
+  'home.selection.deletePartial': '{n} item(s) could not be deleted; the rest are gone.',
+  'home.selection.clear': 'Clear selection',
   'home.folderDelete.title': 'Delete folder',
   'home.folderDelete.subject':
     'This will delete \u201c{title}\u201d and everything inside it.',
@@ -302,6 +318,8 @@ export const en: Record<MessageKey, string> = {
     'Moved “{title}” into “{parent}”, but one slot earlier than where you dropped it — the browser does not accept appending straight to the end of a different folder.',
   'home.drag.movedNoUndo':
     'Moved “{title}” into “{parent}”, but the step could not be recorded, so undo is unavailable.',
+  'home.drag.movedMany': 'Moved {n} item(s) into “{parent}”.',
+  'home.drag.movedManyPartial': 'Moved {moved}, {failed} failed.',
   'home.drag.undo': 'Undo',
   'home.drag.dismiss': 'Dismiss',
   'home.drag.failed': 'Move failed: {reason}. You can also arrange bookmarks in the browser bookmark manager.',

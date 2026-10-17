@@ -25,6 +25,7 @@ import {
   findFolderNode,
   flattenFolders,
   folderPathOf,
+  isWebProtocol,
 } from '../../lib/bookmark-mapper';
 import {
   SEARCH_ENGINE_IDS,
@@ -36,11 +37,15 @@ import { SYNC_SOON_MESSAGE } from '../../lib/messages';
 import BookmarkFormDialog from '../../components/BookmarkFormDialog.vue';
 import EnginePicker from '../../components/EnginePicker.vue';
 import DeleteFolderDialog from '../../components/DeleteFolderDialog.vue';
+import SelectionBar from '../../components/SelectionBar.vue';
+import SelectionDeleteDialog from '../../components/SelectionDeleteDialog.vue';
 import TrashPanel from '../../components/TrashPanel.vue';
 import { useDragArrange, type DropRequest } from '../../composables/useDragArrange';
 import { useCountdown } from '../../composables/useCountdown';
+import { useSelection } from '../../composables/useSelection';
 import { useItemMenu, type MenuTarget } from '../../composables/useItemMenu';
 import { resolveDrop, type DropRejectCode } from '../../lib/drag/drop-plan';
+import { retainExistingIds, splitSelectedIds } from '../../lib/selection';
 import { moveBookmarkNode } from '../../services/bookmark-drag';
 import {
   clearLastEdit,
@@ -69,6 +74,7 @@ import {
 import {
   ALL_FOLDERS,
   UNFILED_FOLDER,
+  type BookmarkFolderFilter,
   type BookmarkFolderNode,
   type BookmarkViewItem,
 } from '../../types/bookmarks';
@@ -822,10 +828,7 @@ function cardDragProps(item: BookmarkViewItem) {
       'drop-after': zone === 'after',
     },
     onDragstart: (event: DragEvent) =>
-      begin(
-        { id: item.id, kind: 'bookmark', title: item.title, siblingIds: siblingsOfBookmark(item) },
-        event,
-      ),
+      beginDrag(item.id, 'bookmark', item.title, siblingsOfBookmark(item), event),
     onDragend: () => cancel(),
     // 卡片是横排网格 ⇒ 轴是 x（插入线也是左右竖条，与判定同一套几何）。
     onDragover: (event: DragEvent) => over(event, item.id, 'edge', true, 'x'),
@@ -847,10 +850,7 @@ function folderDragProps(node: BookmarkFolderNode) {
       'drop-inside': zone === 'inside',
     },
     onDragstart: (event: DragEvent) =>
-      begin(
-        { id: node.id, kind: 'folder', title: node.title, siblingIds: siblingsOfFolder(node) },
-        event,
-      ),
+      beginDrag(node.id, 'folder', node.title, siblingsOfFolder(node), event),
     onDragend: () => cancel(),
     // 文件夹块与卡片同处横排网格 ⇒ 同样走 x 轴。
     onDragover: (event: DragEvent) => over(event, node.id, 'folder', true, 'x'),
@@ -865,10 +865,7 @@ function groupDragProps(node: BookmarkFolderNode) {
     draggable: true,
     class: { 'is-dragging': dragging.value?.id === node.id },
     onDragstart: (event: DragEvent) =>
-      begin(
-        { id: node.id, kind: 'folder', title: node.title, siblingIds: siblingsOfFolder(node) },
-        event,
-      ),
+      beginDrag(node.id, 'folder', node.title, siblingsOfFolder(node), event),
     onDragend: () => cancel(),
   };
 }
@@ -925,6 +922,11 @@ function dragErrorText(error: unknown): string {
  * 这里只负责把它交给写通道、并把结果说清楚。刷新不用做 —— `onMoved` 会触发整树重读。
  */
 async function handleDrop(request: DropRequest): Promise<void> {
+  // 多选拖拽：只可能是"放进去"（卡片在多选时压根不当落点），整批搬。
+  if (request.ids.length > 1) {
+    await moveSelectedInto(request);
+    return;
+  }
   const outcome = resolveDrop({ roots: roots.value, items: items.value, request });
   if (!outcome.ok) {
     // 原地松手不是失败，什么都不说就是最合适的反馈。
@@ -1342,6 +1344,233 @@ async function checkFolderDeleteOutcome(): Promise<void> {
   } catch {
     // 核对是附加功能：它自己失败不该把"同步完成了"这条通知弄丢。
   }
+}
+
+// ---------- 多选：批量打开与批量删除 ----------
+
+const {
+  selected: selectedIds,
+  count: selectedCount,
+  has: isSelected,
+  toggle: toggleSelect,
+  clear: clearSelection,
+  retainExisting: retainExistingSelection,
+} = useSelection();
+
+function selectProps(id: string) {
+  return {
+    selectable: true,
+    selected: isSelected(id),
+    onToggleSelect: () => toggleSelect(id),
+  };
+}
+
+/**
+ * 把选中的 id 分回书签与文件夹。
+ *
+ * 按 id 在**整棵树**里查（`items` 是全部书签，`roots` 是全部文件夹），不是在当前视图里查 ——
+ * 选中集合是全局的，可以跨分组；只在当前视图里查会让"选了别的分组里的两张卡"变成查不到。
+ */
+const selectedNodes = computed(() => {
+  const bookmarkById = new Map(items.value.map((item) => [item.id, item]));
+  // `flatFolders` 是拍平后的过滤项（没有 children/bookmarks），批量操作只需要 id 与标题。
+  const folderById = new Map(flatFolders.value.map((node) => [node.id, node]));
+  const split = splitSelectedIds(
+    selectedIds.value,
+    [...bookmarkById.keys()],
+    [...folderById.keys()],
+  );
+  return {
+    bookmarks: split.bookmarkIds
+      .map((id) => bookmarkById.get(id))
+      .filter((node): node is BookmarkViewItem => node !== undefined),
+    folders: split.folderIds
+      .map((id) => folderById.get(id))
+      .filter((node): node is BookmarkFolderFilter => node !== undefined),
+  };
+});
+
+const selectedFolderCount = computed(() => selectedNodes.value.folders.length);
+
+/** 树变了就把已消失的 id 掉掉（删除、同步拉取都会让树变化）。 */
+watch([items, roots], () => {
+  retainExistingSelection(
+    retainExistingIds(
+      selectedIds.value,
+      items.value.map((item) => item.id),
+      flatFolders.value.map((folder) => folder.id),
+    ),
+  );
+});
+
+/**
+ * 批量打开。
+ *
+ * 只打开**网页协议**的书签：`javascript:` 这类打不开，`chrome://` 与 `file://` 走
+ * `<a>` 会被静默拦掉（见 BookmarkCard 的注释）。被跳过的数量要说出来，不能默默少开几个。
+ *
+ * 全部用 `active: false`：一次开五个标签页还逐个抢焦点，等于把用户从当前页踢走五次。
+ */
+async function openSelected(mode: 'tab' | 'window'): Promise<void> {
+  const urls: string[] = [];
+  let skipped = 0;
+  for (const item of selectedNodes.value.bookmarks) {
+    if (isWebProtocol(item.protocol)) urls.push(item.url);
+    else skipped += 1;
+  }
+
+  if (urls.length === 0) {
+    notice.value = t('home.selection.openNothing');
+    return;
+  }
+
+  try {
+    if (mode === 'tab') {
+      for (const url of urls) await chrome.tabs.create({ url, active: false });
+    } else {
+      // 一个窗口里开 N 个标签页，不是 N 个窗口 —— 后者会被当成弹窗轰炸。
+      await chrome.windows.create({ url: urls });
+    }
+    clearSelection();
+    if (skipped > 0) notice.value = t('home.selection.openSkipped', { n: skipped });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    notice.value = t('home.selection.openFailed', { reason });
+  }
+}
+
+/** 待确认的批量删除。true = 弹窗开着。 */
+const selectionDeleteOpen = ref(false);
+
+function requestRemoveSelected(): void {
+  if (selectedCount.value === 0) return;
+  selectionDeleteOpen.value = true;
+}
+
+/**
+ * 真删。**先删书签再删文件夹**。
+ *
+ * 顺序不是随意的：万一选中的书签正好落在同批要删的文件夹里（跨分组选中能造出这种情况），
+ * 先删文件夹会让那些书签的 `remove` 撞上"节点已不存在"而报错；先删书签就没有这个问题。
+ */
+async function executeRemoveSelected(): Promise<void> {
+  selectionDeleteOpen.value = false;
+  const { bookmarks, folders } = selectedNodes.value;
+  const total = bookmarks.length + folders.length;
+  if (total === 0) {
+    clearSelection();
+    return;
+  }
+
+  let failed = 0;
+  for (const item of bookmarks) {
+    try {
+      await removeBookmarkNode(item.id);
+    } catch {
+      failed += 1;
+    }
+  }
+  for (const folder of folders) {
+    try {
+      await deleteFolder(folder.id);
+    } catch {
+      failed += 1;
+    }
+  }
+
+  clearSelection();
+  // 与单条删除同一条理由：可找回的窗口依赖这一轮尽快同步。
+  requestEarlySync();
+  notice.value =
+    failed > 0
+      ? t('home.selection.deletePartial', { n: failed })
+      : t('home.selection.deleteDone', { n: total });
+}
+
+/**
+ * 开始拖动（既有约定 多选）。
+ *
+ * 抓的是已选中的那张 ⇒ 带走**整个选中集合**；否则只带走这一张，并清空选择 ——
+ * 拖一张没选中的卡，意思是"我这次只想动它"，不该顺手把旁边选中的都搬走。
+ * `ids` 里一定含 `id`（抓哪张就是哪张），`useDragArrange` 靠它决定走多选还是单条路。
+ */
+function beginDrag(
+  id: string,
+  kind: 'bookmark' | 'folder',
+  title: string,
+  siblingIds: string[],
+  event: DragEvent,
+): void {
+  const inSelection = isSelected(id);
+  if (!inSelection && selectedCount.value > 0) clearSelection();
+  const ids = inSelection ? [...selectedIds.value] : [id];
+  if (!ids.includes(id)) ids.unshift(id);
+  begin({ id, kind, title, siblingIds, ids }, event);
+}
+
+/**
+ * 多选拖拽：整批搬进一个文件夹。
+ *
+ * 三条约束都是硬事实逼出来的：
+ * 1. **只可能是 inside** —— 卡片在多选时压根不当落点（`useDragArrange.over` 里拦掉了），
+ *    这里再挡一次，不把"插到某张卡前面"这种做不到的事放进来。
+ * 2. **顺序按树排**（书签按 `items`、文件夹按 `flatFolders`），不按用户勾选的先后 ——
+ *    没人记得住自己先勾的是哪张。
+ * 3. **逐个搬，单个失败不阻断整批**。两次 `await` 之间树不会自动刷新，所以用
+ *    "追加位置 + 下标"近似保持相对顺序；丢一两项也比整批放弃好。
+ *
+ * 不写 `lastEdit`：撤销记录是**单条**的（nodeId / fromIndex），一批搬运没有对应形状。
+ * 批量移动因此**没有撤销**，提示里也不承诺它有。
+ */
+async function moveSelectedInto(request: DropRequest): Promise<void> {
+  if (request.zone !== 'inside') return;
+
+  const order = new Map(items.value.map((item, index) => [item.id, index]));
+  const folderOrder = new Map(flatFolders.value.map((folder, index) => [folder.id, index]));
+  const ordered = [...new Set(request.ids)].sort(
+    (a, b) =>
+      (order.get(a) ?? folderOrder.get(a) ?? 0) - (order.get(b) ?? folderOrder.get(b) ?? 0),
+  );
+
+  // 先用第一个探一次落点：造环（把文件夹拖进它自己的子孙）、拖进自己、跨目录追加被拒
+  // 都在这一个判断里。整批共用一个落点，探一次就够。
+  const probe = resolveDrop({
+    roots: roots.value,
+    items: items.value,
+    request: { draggedId: ordered[0] ?? '', targetId: request.targetId, zone: 'inside' },
+  });
+  if (!probe.ok) {
+    // 原地松手不是失败，什么都不说就是最合适的反馈。
+    if (probe.code !== 'same-position') notice.value = t(DROP_REJECT_KEY[probe.code]);
+    return;
+  }
+  const parentTitle = findFolderNode(roots.value, probe.resolution.parentId)?.title ?? '';
+
+  let moved = 0;
+  let failed = 0;
+  for (const [index, id] of ordered.entries()) {
+    const one = resolveDrop({
+      roots: roots.value,
+      items: items.value,
+      request: { draggedId: id, targetId: request.targetId, zone: 'inside' },
+    });
+    if (!one.ok) {
+      failed += 1;
+      continue;
+    }
+    try {
+      await moveBookmarkNode({ ...one.resolution, insertAt: one.resolution.insertAt + index });
+      moved += 1;
+    } catch {
+      failed += 1;
+    }
+  }
+
+  requestEarlySync();
+  notice.value =
+    failed > 0
+      ? t('home.drag.movedManyPartial', { moved, failed })
+      : t('home.drag.movedMany', { n: moved, parent: parentTitle });
 }
 
 // ---------- 撤销「上一次改动」（既有约定 提出、既有约定 泛化） ----------
@@ -1960,7 +2189,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                     v-for="item in visibleItems"
                     :key="item.id"
                     :item="item"
-                    v-bind="cardDragProps(item)"
+                    v-bind="{ ...cardDragProps(item), ...selectProps(item.id) }"
                     @contextmenu.prevent="openBookmarkMenu(item, $event)"
                     @open="openNonWebBookmark(item)"
                   />
@@ -1980,7 +2209,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                       v-for="item in activeFolder.bookmarks"
                       :key="item.id"
                       :item="item"
-                      v-bind="cardDragProps(item)"
+                      v-bind="{ ...cardDragProps(item), ...selectProps(item.id) }"
                       @contextmenu.prevent="openBookmarkMenu(item, $event)"
                       @open="openNonWebBookmark(item)"
                     />
@@ -2014,7 +2243,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                       v-for="item in activeFolder.bookmarks"
                       :key="item.id"
                       :item="item"
-                      v-bind="cardDragProps(item)"
+                      v-bind="{ ...cardDragProps(item), ...selectProps(item.id) }"
                       @contextmenu.prevent="openBookmarkMenu(item, $event)"
                       @open="openNonWebBookmark(item)"
                     />
@@ -2058,7 +2287,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                         v-for="grandChild in child.children"
                         :key="grandChild.id"
                         :node="grandChild"
-                        v-bind="folderDragProps(grandChild)"
+                        v-bind="{ ...folderDragProps(grandChild), ...selectProps(grandChild.id) }"
                         @open="selectFolder"
                         @contextmenu.prevent="openFolderMenu(grandChild, $event)"
                       />
@@ -2070,7 +2299,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                         v-for="item in child.bookmarks"
                         :key="item.id"
                         :item="item"
-                        v-bind="cardDragProps(item)"
+                        v-bind="{ ...cardDragProps(item), ...selectProps(item.id) }"
                         @contextmenu.prevent="openBookmarkMenu(item, $event)"
                         @open="openNonWebBookmark(item)"
                       />
@@ -2105,6 +2334,24 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
       :recovery="recoveryMode"
       @confirm="confirmFolderDelete"
       @cancel="cancelFolderDelete"
+    />
+
+    <SelectionDeleteDialog
+      v-if="selectionDeleteOpen"
+      :count="selectedCount"
+      :folder-count="selectedFolderCount"
+      @confirm="executeRemoveSelected"
+      @cancel="selectionDeleteOpen = false"
+    />
+
+    <SelectionBar
+      v-if="selectedCount > 0"
+      :count="selectedCount"
+      :folder-count="selectedFolderCount"
+      @open="openSelected('tab')"
+      @open-window="openSelected('window')"
+      @remove="requestRemoveSelected"
+      @clear="clearSelection"
     />
 
     <!-- 卡片提示：**全页只有这一个**气泡，卡片只带 data-tip。

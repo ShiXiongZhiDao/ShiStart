@@ -4,9 +4,15 @@ import { computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import type { BookmarkFolderNode } from '../types/bookmarks';
 
-const props = defineProps<{ node: BookmarkFolderNode }>();
+const props = defineProps<{
+  node: BookmarkFolderNode;
+  /** 多选模式开没开。关着时不渲染勾选框。 */
+  selectable?: boolean;
+  /** 这个文件夹有没有被选中。 */
+  selected?: boolean;
+}>();
 
-const emit = defineEmits<{ open: [id: string] }>();
+const emit = defineEmits<{ open: [id: string]; 'toggle-select': [] }>();
 
 const { t } = useI18n();
 
@@ -26,9 +32,26 @@ const tip = computed(() =>
   <button
     type="button"
     class="folder-tile"
+    :class="{ 'is-selected': selected, 'is-selectable': selectable }"
     :data-tip="tip"
     @click="emit('open', props.node.id)"
   >
+    <!-- 勾选框：与书签卡同一套 role/aria/键盘约定。 -->
+    <span
+      v-if="selectable"
+      class="card-select"
+      role="checkbox"
+      :aria-checked="selected === true"
+      :aria-label="t('home.select.item', { title: node.title })"
+      tabindex="0"
+      @click.stop.prevent="emit('toggle-select')"
+      @keydown.space.prevent.stop="emit('toggle-select')"
+      @keydown.enter.prevent.stop="emit('toggle-select')"
+    >
+      <svg v-if="selected" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12.5l4.5 4.5L19 7" />
+      </svg>
+    </span>
     <span class="tile-icon" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3.5 7.2A2.2 2.2 0 0 1 5.7 5h3.1c.6 0 1.2.25 1.6.7l1 1.1h6.9a2.2 2.2 0 0 1 2.2 2.2v7.8a2.2 2.2 0 0 1-2.2 2.2H5.7a2.2 2.2 0 0 1-2.2-2.2V7.2Z" />

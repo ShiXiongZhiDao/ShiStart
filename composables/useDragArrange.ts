@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { zoneFromHorizontal, zoneFromVertical } from '../lib/drag/drop-zone';
 import { resolveReorderZone, type DropZone } from '../lib/drag/drop-plan';
 
@@ -28,6 +28,13 @@ export interface DragSource {
    * 跨目录拖放时它会被原样忽略：那种场景下落点在哪一半才是有意义的信号。
    */
   siblingIds?: string[];
+  /**
+   * 这次拖动实际带走的 id（既有约定 多选）。
+   *
+   * 缺省 / 空 = 只拖 `id` 自己（单条，行为与以前完全一致）。
+   * 多选时它是整个选中集合，且**一定含 `id`** —— 抓哪张，`id` 就是哪张。
+   */
+  ids?: readonly string[];
 }
 
 export interface DropHint {
@@ -39,6 +46,11 @@ export interface DropRequest {
   draggedId: string;
   targetId: string;
   zone: DropZone;
+  /**
+   * 要搬走的全部 id（既有约定 多选）。单条时是 `[draggedId]` ——
+   * 调用方因此不必分两条路处理。
+   */
+  ids: readonly string[];
 }
 
 // 落点几何（边带宽度、三段判定）在 `lib/drag/drop-zone.ts`，是纯函数且有单测 ——
@@ -46,6 +58,18 @@ export interface DropRequest {
 
 const dragging = ref<DragSource | null>(null);
 const hint = ref<DropHint | null>(null);
+
+/**
+ * 这次拖着几项。0 = 没在拖。
+ *
+ * 卡片（edge 模式）只在**单条**时当落点 —— 一根插入线表达不了"这一组插到这儿、按什么顺序"，
+ * 所以多选时卡片直接不接管（浏览器也不给 drop），只有文件夹块与分组当落点。
+ */
+const draggingCount = computed(() => {
+  const source = dragging.value;
+  if (!source) return 0;
+  return source.ids && source.ids.length > 0 ? source.ids.length : 1;
+});
 
 let dropHandler: ((request: DropRequest) => void) | null = null;
 
@@ -127,6 +151,9 @@ export function useDragArrange() {
     // 拖到自己身上没有意义（放进自己 = 造环，插到自己旁边 = 原地）。
     // 这里**不** preventDefault，浏览器因此不会给 drop —— 连视觉反馈都不给。
     if (!source || source.id === targetId) return;
+    // 多选时卡片不当落点：`mode === 'edge'` 意味着只有"插到它前/后"一种落点，
+    // 而一根线表达不了一组的位置。直接不接管，鼠标移上去连提示都不出。
+    if (draggingCount.value > 1 && mode === 'edge') return;
     // 不 preventDefault 浏览器就不给 drop —— 这一行是必需的。
     event.preventDefault();
     // 分组是嵌着卡片与文件夹块的：里层先接管，外层（整节）才轮得到。
@@ -147,8 +174,9 @@ export function useDragArrange() {
     event.preventDefault();
     event.stopPropagation();
     const zone = zoneFor(event, targetId, mode, allowEdge, axis);
+    const ids = source.ids && source.ids.length > 0 ? source.ids : [source.id];
     cancel();
-    dropHandler?.({ draggedId: source.id, targetId, zone });
+    dropHandler?.({ draggedId: source.id, targetId, zone, ids });
   }
 
   /** 由 App.vue 注册：只有它握着整棵树，能算出落点到底是什么意思。 */
@@ -156,5 +184,5 @@ export function useDragArrange() {
     dropHandler = handler;
   }
 
-  return { dragging, hint, begin, cancel, hintZone, over, drop, registerDropHandler };
+  return { dragging, hint, draggingCount, begin, cancel, hintZone, over, drop, registerDropHandler };
 }

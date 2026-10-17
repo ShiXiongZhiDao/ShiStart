@@ -1353,6 +1353,8 @@ body.is-resizing {
 }
 
 .folder-tile {
+  /* 多选的勾选框绝对定位在图标槽上，需要定位上下文。 */
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--sp-4);
@@ -1637,6 +1639,94 @@ body.is-resizing {
 .ghost-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* ---------- 多选 ---------- */
+
+/*
+ * 勾选框**盖在图标槽位上**，不另占地方。
+ *
+ * 试过三种放法，前两种都会把布局弄坏：
+ *   ① 放卡片左外侧 —— 会被 `content-visibility: auto` 的 paint containment 裁掉（同 既有约定 那个坑）；
+ *   ② 选中时给卡片加左侧 padding —— 卡片宽度不变、内容右移，hover 进出的瞬间会抖一下，
+ *      而拖动过程中 rect 一变，落点判定就跟着手指跑偏。
+ * 现在是第三种：勾选框与图标同尺寸同位置，悬停时图标淡出、勾选框浮上来。
+ * **卡片一个像素都不动**，拖拽与落点判定完全不受影响。
+ */
+.card-select {
+  position: absolute;
+  left: var(--sp-6);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: transparent;
+  opacity: 0;
+  z-index: 2;
+  cursor: pointer;
+  transition:
+    opacity var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    background var(--dur-fast) var(--ease-standard);
+}
+
+/* 图标让位：勾选框出现时它淡下去，两者不同时抢那 24px。 */
+.bookmark-card.is-selectable:hover .site-icon,
+.folder-tile.is-selectable:hover .tile-icon {
+  opacity: 0.2;
+}
+
+/* 勾选框自己获得焦点时也要显形（键盘 Tab 得到它）。 */
+.card-select:focus-visible {
+  opacity: 1;
+}
+
+.bookmark-card.is-selectable:hover .card-select,
+.folder-tile.is-selectable:hover .card-select {
+  opacity: 1;
+}
+
+/* 已选中的常显 —— 它要一直告诉用户"这一张在选中集合里"。 */
+.card-select[aria-checked='true'] {
+  opacity: 1;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+/* 已选中时图标一直让位，不用等悬停。 */
+.bookmark-card.is-selected .site-icon,
+.folder-tile.is-selected .tile-icon {
+  opacity: 0.2;
+}
+
+.card-select svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* 触屏没有 hover：勾选框常显，否则多选在这个设备上根本发现不了。 */
+@media (hover: none) {
+  .card-select {
+    opacity: 1;
+  }
+
+  .bookmark-card.is-selectable .site-icon,
+  .folder-tile.is-selectable .tile-icon {
+    opacity: 0.2;
+  }
+}
+
+/* 选中态：主色淡底 + 主色边框。写在 hover 之后，才能压过 `:hover` 的 accent 边框。 */
+.bookmark-card.is-selected,
+.folder-tile.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 /* ---------- 拖拽整理 ---------- */
