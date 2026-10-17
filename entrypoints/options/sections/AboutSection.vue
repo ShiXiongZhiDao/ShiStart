@@ -88,6 +88,30 @@ async function resetAll(): Promise<void> {
       <p class="hint">{{ t('about.credits.body') }}</p>
     </section>
 
+    <!-- 开源仓库与作者主页。两个公仓内容一致（一个推送到另一个），
+         国内访问 Gitee 更快、GitHub 那边能看到 Release 与更新节奏。
+         三项都是外链：扩展页里 `<a target="_blank">` 直接新开标签页即可。 -->
+    <section class="card">
+      <h3>{{ t('about.links') }}</h3>
+      <ul class="about-links">
+        <li>
+          <a href="https://github.com/ShiXiongZhiDao/ShiStart" target="_blank" rel="noopener noreferrer">
+            {{ t('about.links.github') }}
+          </a>
+        </li>
+        <li>
+          <a href="https://gitee.com/ShiXiongZhiDao/ShiStart" target="_blank" rel="noopener noreferrer">
+            {{ t('about.links.gitee') }}
+          </a>
+        </li>
+        <li>
+          <a href="https://shixiongzhidao.cn" target="_blank" rel="noopener noreferrer">
+            {{ t('about.links.home') }}
+          </a>
+        </li>
+      </ul>
+    </section>
+
     <section class="card">
       <h3>{{ t('about.changelog') }}</h3>
       <p v-if="release" class="hint">
@@ -175,6 +199,43 @@ async function resetAll(): Promise<void> {
   font-weight: var(--fw-medium);
   background: var(--surface-2);
   color: var(--text-2);
+}
+
+/*
+ * 开源仓库与作者主页。
+ *
+ * 做成胶囊而不是下划线链接：这一页其它卡片都是"一整块可点的按钮"，
+ * 突然冒出三个裸文字链接会显得像漏了样式；而胶囊的点击区域也更大。
+ */
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-links a {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-2) var(--sp-5);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  text-decoration: none;
+  transition:
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard),
+    background var(--dur-fast) var(--ease-standard);
+}
+
+.about-links a:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }
 
 .qr-row {

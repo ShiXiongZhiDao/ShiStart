@@ -114,17 +114,15 @@ export const zhCN = {
   'about.title': '关于',
   'about.version': '版本 {version}',
   'about.privacy': '隐私',
-  'about.privacy.body':
-    '书签只在本机读取，不上传、不落盘、不做统计。页面不使用任何外部 CDN、远程字体或远程脚本。' +
-    '唯一的出站连接是你自己填写的 WebDAV 服务器，且只有在你开启同步之后才会发生。' +
-    // ⚠️ 这句必须留着：赞助二维码是**唯一**的外部请求，删了这段说明，
-    //    上面那句"唯一出站连接是 WebDAV"就变成了假话。
-    '例外只有一处：打开这个「关于」页时，赞助与公众号二维码会从 GitHub / Gitee 拉取（两个源里挑先连上的那个），' +
-    '这一步不带任何参数，也只在你打开这一页时发生。',
+  'about.privacy.body': '书签只在本机读取，不上传、不落盘、不做统计。页面不加载远程脚本与字体。对外只连两处：你自己填写的 WebDAV（开启同步后才发生），以及本页的二维码图片。',
   'about.credits': '关于本扩展',
   'about.credits.body':
     '师兄起页接管浏览器新标签页，展示你已经收藏的书签。新建、重命名、移动与删除都直接写你的浏览器书签，' +
     '与你在书签管理器里做的完全等价；每一次改动都留着反悔的余地（撤销条，或同步开启后的回收站）。',
+  'about.links': '项目与作者',
+  'about.links.github': 'GitHub 仓库',
+  'about.links.gitee': 'Gitee 仓库',
+  'about.links.home': '个人主页',
   'about.reset': '重置全部设置',
   'about.reset.confirm': '再点一次确认重置',
   // ---- 最近更新：只显示最新一版，历史留在仓库的 CHANGELOG.md ----

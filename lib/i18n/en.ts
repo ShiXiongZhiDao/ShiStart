@@ -123,11 +123,7 @@ export const en: Record<MessageKey, string> = {
   'about.title': 'About',
   'about.version': 'Version {version}',
   'about.privacy': 'Privacy',
-  'about.privacy.body':
-    'Bookmarks are read locally: never uploaded, never cached, never measured. The pages use no external CDN, remote font or remote script. ' +
-    'The only outbound connection is the WebDAV server you enter yourself, and it only happens once you turn sync on. ' +
-    'There is exactly one exception: on this About page, the sponsor and official-account QR codes are fetched from GitHub / Gitee (whichever responds first). ' +
-    'That request carries no parameters and only happens while this page is open.',
+  'about.privacy.body': 'Bookmarks are read locally only: never uploaded, never stored, never counted. The page loads no remote scripts or fonts. Only two outbound requests happen: the WebDAV server you configure (after you enable sync), and the QR images on this page.',
   'about.credits': 'About this extension',
   'about.credits.body':
     'ShiStart takes over the new tab page and shows the bookmarks you already have. Creating, renaming, moving and deleting write straight to your browser bookmarks — ' +
@@ -153,6 +149,10 @@ export const en: Record<MessageKey, string> = {
   'about.official.name': '师兄知道',
   'about.official.body':
     'New versions, usage notes and new features land first on our WeChat official account "师兄知道". Scan the code, or search that name inside WeChat.',
+  'about.links': 'Project & author',
+  'about.links.github': 'GitHub repo',
+  'about.links.gitee': 'Gitee repo',
+  'about.links.home': 'Homepage',
   'about.reset': 'Reset all settings',
   'about.reset.confirm': 'Click again to confirm reset',
   'about.reset.done': 'Restored the default settings.',
