@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/ShiXiongZhiDao/ShiStart/main/public/icon/128.png" alt="师兄起页" width="88"></p>
+<p align="center"><img src="public/icon/128.png" alt="师兄起页" width="88"></p>
 
 <h1 align="center">师兄起页 ShiStart</h1>
 
@@ -6,7 +6,9 @@
 
 <p align="center"><a href="./README.en.md">English</a> · <strong>简体中文</strong></p>
 
-<p align="center">Chrome / Edge · Manifest V3 · 数据只留在本机 · 还没上架商店</p>
+<p align="center"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT 授权"> <img src="https://img.shields.io/badge/browsers-Chrome%20%C2%B7%20Edge-blue" alt="Chrome 与 Edge"> <img src="https://img.shields.io/badge/manifest-MV3-lightgrey" alt="Manifest V3"> <img src="https://img.shields.io/badge/data-local_only-yellowgreen" alt="数据只留在本机"> <img src="https://img.shields.io/badge/store-not_published-orange" alt="还没上架商店"></p>
+
+<p align="center"><img src="assets/screenshots/zh/home-sidebar.png" alt="主页：左边是书签目录树，右边按文件夹把卡片铺开" width="920"></p>
 
 ---
 
@@ -22,17 +24,63 @@
 
 - **书签读的是浏览器原生书签树**，每次打开新标签页实时读取，不另存副本、不上传
   （开了同步则见下）。
-- **只读**：不创建、不改名、不移动、不删除原生书签。要增删改，请点右上角按钮
-  进浏览器自带的书签管理器。**也不提供「导入书签」** —— 那会开第二条写入通道。
+- **编辑直接写回原生书签**：在主页里整理书签（新建文件夹、改名、拖拽排序、删除）会
+  写回浏览器的原生书签树 —— 没有第二份副本，不存在副本不一致。删除先进扩展内的回收站，
+  30 天内可恢复。**不提供「导入书签」** —— 那会开第二条写入通道。
 - 界面有**简体中文 / English** 两档，默认跟随浏览器。
 - 可选的 **WebDAV 同步**：在多台浏览器之间同步书签与界面偏好。默认关闭，
   要用自己在设置页里填地址和账号。
+
+## 界面一览
+
+### 主页
+
+带下层文件夹的按**分组**铺开，叶子目录直接平铺卡片 —— 目录树收起来时就是这样，
+一屏能看完一个大目录。顶部搜索框是**全库匹配**，不在当前文件夹里的书签也能搜到。
+
+<p align="center"><img src="assets/screenshots/zh/home.png" alt="主页：分组与书签卡片" width="880"></p>
+
+### 浅色与深色
+
+同一套布局，两套配色。右上角那排图标里，调色板按钮切换主题与背景图案；
+卡片列数跟着窗口宽度走，宽了就多排几列。
+
+| 浅色 | 深色 |
+|---|---|
+| <img src="assets/screenshots/zh/home-sidebar.png" alt="浅色主题，目录树展开" width="420"> | <img src="assets/screenshots/zh/dark.png" alt="深色主题，目录树展开" width="420"> |
+
+### 回收站
+
+删除的书签先进回收站，**30 天内可恢复**。每条都写着它原本在哪个目录、什么时候删的，
+点「恢复」就回到原位 —— 回到浏览器原生书签树里，不是回到一份副本里。
+
+<p align="center"><img src="assets/screenshots/zh/trash.png" alt="回收站：每条书签标注来源目录与删除时间" width="880"></p>
+
+### 快照
+
+开了同步之后，每次同步成功都会在云端留一份**完整快照**：列着时间与体积，
+可以整棵回退到某一版。同步和快照是分开的两件事 —— 同步管「现在一致」，
+快照管「回到从前」。
+
+保留策略：30 天以内的一律留着，更早的最多再留最近 20 份。内容没变不会重复存
+（同一个同步空间共用一份，不同的内容各占一份）。回退是**前进式**的，
+动手之前会先把当前状态另存一份。
+
+<p align="center"><img src="assets/screenshots/zh/snapshots.png" alt="快照：每次同步成功存一份完整快照，可整棵回退" width="700"></p>
+
+### 同步
+
+填上你自己那个 WebDAV 地址、用户名、应用密码就行（坚果云、Nextcloud、群晖都行）。
+下面三块折叠着：同步范围、自动同步、界面偏好 —— 会上传什么、多久传一次，都在里面写清楚，
+随时可以关掉。不填地址就是纯本机使用。
+
+<p align="center"><img src="assets/screenshots/zh/sync.png" alt="同步：WebDAV 地址、账号与应用密码" width="700"></p>
 
 ## 权限：只申请五项
 
 | 权限 | 为什么需要 |
 | --- | --- |
-| `bookmarks` | 读取书签树，用于展示、按文件夹筛选、本地搜索。只读，不改不传 |
+| `bookmarks` | 读取书签树，用于展示、按文件夹筛选、本地搜索；在主页里整理书签（新建/改名/拖拽/删除）也通过它写回浏览器书签 |
 | `favicon` | 用浏览器自带的机制显示站点图标；取不到时用文字回退 |
 | `storage` | 保存界面偏好（配色、明暗、背景图案、语言、搜索引擎、每行卡片数、侧边栏宽度等） |
 | `alarms` | 可选同步的定时轮询（默认每 30 分钟） |
@@ -85,6 +133,12 @@ Chrome 138 起，新标签页被扩展接管时，Chrome 会在页面底部插�
 **右缘的「最近访问」能关吗？**
 
 能。设置页 → 通用。它读的是浏览器自己的历史，不留副本。
+
+**快照会一直堆着吗？**
+
+会自己收敛。30 天以内的一律留着，更早的最多再留最近 20 份，其余自动清掉。
+快照只在开了同步之后才有，纯本机使用时它就是空的。删一份是**共享**的 ——
+你在这里删了，别的设备也看不到，所以删之前想一下它是不是别处唯一的保险。
 
 **书签和设置能导出吗？**
 

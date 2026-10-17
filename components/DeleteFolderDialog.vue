@@ -125,15 +125,16 @@ function onEnter(): void {
         </span>
       </label>
 
-      <!-- 说不说得清"找不找得回"，决定这两行里用哪一行。
+      <!-- 删掉之后去哪儿，三种实情各一行（recovery 三档）。
            ⚠️ 这不是可选的装饰：既有约定（0040 决策 6）要求照实披露
-           "这次删除能不能找回"，没开同步时删了就是真没了。用户 2026-10-14 要求
-           连它一起删掉，我压成了一行、去掉了粉色警告盒，但**没有删掉这个事实** ——
-           要真删得先改那三条 既有约定（既有约定 修订记录里记着这笔账）。 -->
+           "这次删除能不能找回"。2026-10-17 之前"没配同步"那一档写的是"找不回来"；
+           既有约定 起没配同步也记本机墓碑（恢复零网络），这一档改成实情
+           "进本机回收站"，不再是警告。用户 2026-10-14 要求把警告盒压成一行，
+           事实照旧披露，只是换了形状。 -->
       <p
         v-if="props.recovery === 'none'"
-        class="dialog-note is-danger"
-        v-html="tRich('home.folderDelete.noSync')"
+        class="dialog-note"
+        v-html="tRich('home.folderDelete.localOnly')"
       ></p>
       <p
         v-else-if="props.recovery === 'manual'"

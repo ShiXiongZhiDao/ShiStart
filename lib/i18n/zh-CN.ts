@@ -161,9 +161,12 @@ export const zhCN = {
   'home.theme.summary': '主题：{palette} · {mode}',
   'home.manager': '打开浏览器书签管理器',
   'home.managerHint': '请按 Ctrl+Shift+O（macOS 为 Cmd+Option+B）打开浏览器书签管理器。',
-  'home.delete.done': '已删除「{title}」。正在同步 —— 完成后就能在设置页的回收站里找回它。',
+  'home.delete.done': '已删除「{title}」。正在同步 —— 完成后就能在侧边栏的回收站里找回它。',
   'home.delete.doneManualSync':
     '已删除「{title}」。自动同步是关着的 —— 到设置页的「同步」里点一次「立即同步」，它才会进回收站。',
+  // 没配同步：当场进本机回收站，不发任何请求。
+  'home.delete.doneNoSync': '已删除「{title}」。已放进侧边栏的回收站，可以从那里恢复。',
+  'home.delete.doneUnrecoverable': '已删除「{title}」，但回收站没记上 —— 这一条可能找不回来了。',
   'home.delete.failed': '删除失败：{reason}。可以改用浏览器书签管理器删除。',
   'home.copyDone': '链接已复制到剪贴板。',
   'home.open.scriptlet': '书签小工具要在它自己那个网页上运行，主页打不开它。',
@@ -189,18 +192,19 @@ export const zhCN = {
   'menu.rename': '重命名',
   'menu.delete': '删除书签',
   'menu.deleteConfirm': '确认删除',
-  'menu.deleteNote': '删掉之后它会在设置页的<strong>回收站</strong>里，随时可以找回。再点一次确认。',
+  'menu.deleteNote': '删掉之后它会在侧边栏的<strong>回收站</strong>里，随时可以找回。再点一次确认。',
   'menu.deleteNoteManualSync':
-    '删掉之后它会在设置页的<strong>回收站</strong>里，但自动同步是关着的 —— 要你手动同步一次。再点一次确认。',
-  'menu.deleteNoteFinal': '没有开启同步，删掉之后<strong>找不回来</strong>。再点一次确认。',
+    '删掉之后它会在侧边栏的<strong>回收站</strong>里，但自动同步是关着的 —— 要你手动同步一次。再点一次确认。',
+  // 没配同步：删除当场记一笔本机墓碑，回收站照常可用，只是不传播。
+  'menu.deleteNoteLocal': '未开启同步 —— 删掉后会放进<strong>本机回收站</strong>，随时可以找回。再点一次确认。',
   // 删除文件夹。空文件夹走菜单内两下点击；非空必须过删除预览模态。
   'menu.deleteFolder': '删除文件夹',
   'menu.deleteFolderConfirm': '确认删除',
   'menu.deleteFolderNote':
-    '将删除这个空文件夹。删掉之后它会在设置页的<strong>回收站</strong>里，随时可以找回。再点一次确认。',
+    '将删除这个空文件夹。删掉之后它会在侧边栏的<strong>回收站</strong>里，随时可以找回。再点一次确认。',
   'menu.deleteFolderNoteManualSync':
-    '将删除这个空文件夹。删掉之后它会在设置页的<strong>回收站</strong>里，但自动同步是关着的 —— 要你手动同步一次。再点一次确认。',
-  'menu.deleteFolderNoteFinal': '没有开启同步，删掉之后<strong>找不回来</strong>。再点一次确认。',
+    '将删除这个空文件夹。删掉之后它会在侧边栏的<strong>回收站</strong>里，但自动同步是关着的 —— 要你手动同步一次。再点一次确认。',
+  'menu.deleteFolderNoteLocal': '未开启同步 —— 删掉后会放进<strong>本机回收站</strong>，随时可以找回。再点一次确认。',
   // 删除预览模态
   'home.select.item': '选择「{title}」',
   'home.selection.count': '已选 {n} 项',
@@ -211,8 +215,11 @@ export const zhCN = {
   'home.selection.openSkipped': '已跳过 {n} 条无法直接打开的链接。',
   'home.selection.deleteTitle': '删除 {n} 项？',
   'home.selection.deleteBody': '其中 {n} 个文件夹，里面的内容会一起删除。',
-  'home.selection.deleteBodyPlain': '选中的都是书签，删除后可以在同步空间的回收站里找回。',
-  'home.selection.deleteDone': '已删除 {n} 项。正在同步 —— 完成后可在回收站找回。',
+  'home.selection.deleteBodyPlain': '选中的都是书签，删除后可以在回收站里找回。',
+  'home.selection.deleteDone': '已删除 {n} 项。回收站里可以找回。',
+  // 没配同步：删当场进本机回收站。
+  'home.selection.deleteDoneNoSync': '已删除 {n} 项。已放进侧边栏的回收站，可以从那里恢复。',
+  'home.selection.deleteDoneUnrecoverable': '已删除 {n} 项，但有 {m} 项没能记进回收站，可能找不回来。',
   'home.selection.deleteFailed': '删除失败：{reason}',
   'home.selection.openNothing': '选中的项里没有可以直接打开的网页。',
   'home.selection.openFailed': '打开失败：{reason}',
@@ -225,16 +232,21 @@ export const zhCN = {
   'home.folderDelete.samples': '其中包括：',
   'home.folderDelete.typedNameLabel': '请输入文件夹名以确认：',
   'home.folderDelete.typedNameMismatch': '名字对不上，再试一次。',
-  'home.folderDelete.noSync': '未开启同步 —— 删掉之后<strong>找不回来</strong>。',
-  'home.folderDelete.manualSync': '自动同步关着 —— 删掉之后要去设置页点一次「立即同步」才进回收站。',
+  // 没配同步：删掉后进本机回收站，恢复是零网络的。
+  'home.folderDelete.localOnly': '未开启同步 —— 删掉后会放进<strong>本机回收站</strong>，可以从侧边栏恢复。',  'home.folderDelete.manualSync': '自动同步关着 —— 删掉之后要去设置页点一次「立即同步」才进回收站。',
   'home.folderDelete.confirm': '删除 {n} 项',
   'home.folderDelete.cancel': '取消',
   'home.folderDelete.loading': '正在计算文件夹内容…',
   'home.folderDelete.unreadable': '读不到这个文件夹了，可能刚刚被删掉。',
   'home.folderDelete.done':
-    '已删除文件夹「{title}」及其全部内容（{n} 项）。正在同步 —— 完成后就能在设置页的回收站里找回。',
+    '已删除文件夹「{title}」及其全部内容（{n} 项）。正在同步 —— 完成后就能在侧边栏的回收站里找回。',
   'home.folderDelete.doneManualSync':
     '已删除文件夹「{title}」及其全部内容（{n} 项）。自动同步是关着的 —— 到设置页的「同步」里点一次「立即同步」，它才会进回收站。',
+  // 没配同步：整棵子树当场进本机回收站。
+  'home.folderDelete.doneNoSync':
+    '已删除文件夹「{title}」及其全部内容（{n} 项）。已放进侧边栏的回收站，可以从那里恢复。',
+  'home.folderDelete.doneUnrecoverable':
+    '已删除文件夹「{title}」及其全部内容（{n} 项），但回收站没记上 —— 可能找不回来了。',
   'home.folderDelete.failed': '删除文件夹失败：{reason}。整理文件夹也可以改用浏览器书签管理器。',
   'home.folderDelete.rootRejected': '书签栏、其他书签与移动设备书签是浏览器的根目录，不能删除。',
   // 并发编辑挡下的一部分节点
@@ -296,7 +308,7 @@ export const zhCN = {
   'home.sync.ok': '同步：正常，点击设置',
   // 拖拽整理
   'home.drag.into': '放进「{title}」',
-  'home.drag.moved': '已把「{title}」移到「{parent}」。',
+  // 成功移动不写标题行（底部撤销条已经说了同一句话，既有约定）；这里只留撤销条说不清的两种。
   'home.drag.movedAdjusted':
     '已把「{title}」移到「{parent}」，但位置比放下时靠前一位 —— 浏览器不接受跨目录直接追加到末尾。',
   'home.drag.movedNoUndo': '已把「{title}」移到「{parent}」，但这一步没能记下来，撤销不可用。',
@@ -314,6 +326,7 @@ export const zhCN = {
     '浏览器根节点下的顺序师兄起页不改 —— 一级目录与「未归类」里的散落书签请用书签管理器整理。',
   // 新建 / 改名 / 撤销「上一次改动」。
   // 撤销条与 undoDone 按改动种类分开说 —— 同一条"已撤销"分不清刚才到底是新建、改名还是移动。
+  // 移动的撤销**不写** undoDone（卡片当场回原位 + 撤销条消失已经说清，既有约定 修订）。
   'home.edit.new': '新建',
   'home.edit.newHint': '在「{folder}」里新建',
   'home.edit.noChange': '名称与网址都没有改动。',
@@ -327,7 +340,6 @@ export const zhCN = {
   'home.edit.undoBar.move': '上一次移动：把「{title}」移到了「{parent}」',
   'home.edit.undoDone.create': '已撤销 —— 新建的「{title}」已经删掉。',
   'home.edit.undoDone.update': '已撤销 —— 「{title}」已经改回「{before}」。',
-  'home.edit.undoDone.move': '已撤销 —— 「{title}」回到了原来的位置。',
   'home.edit.undoFailed': '撤销失败：{reason}',
   'home.edit.error.apiUnavailable': '当前环境不支持写入浏览器书签。',
   'home.edit.error.nodeMissing': '要改动的那条书签、或它要回到的地方已经不在了。',
@@ -581,6 +593,11 @@ export const zhCN = {
   'trash.pendingChip': '待同步',
   'trash.pendingNote':
     '这几条是<strong>刚在本机删掉、同步还没接手</strong>的。它们已经不在你的浏览器里了，但删除也还没传出去 —— <strong>点恢复就能直接放回原来的位置</strong>（不用等同步，也不发任何请求）。不管它们的话，等一轮同步跑完就会变成下面的正式回收站条目。',
+  // 断开同步配置时面板顶部的一行口径（既有约定 修订，2026-10-17）：三件事一次说清 ——
+  // 恢复是即地的、彻底删除只在本机、条目 30 天后自动彻底清除（本机就算，既有约定 补）；
+  // 传播要等重新连接。
+  'trash.offlineNote':
+    '未开启同步：恢复会直接放回浏览器；彻底删除只在本机生效；回收站里的条目 30 天后自动彻底删除。重新连接同步后，这些改动才会传播。',
   // 按"一次删除"分组；组根的「另有 n 项」chip 就是展开开关。
   'trash.groupExpand': '另有 {n} 项',
   'trash.groupCollapse': '收起',
@@ -591,7 +608,11 @@ export const zhCN = {
   'trash.kindFolder': '文件夹',
   'trash.kindBookmark': '书签',
   'trash.empty':
-    '还没有删除记录。开启同步后，任何一台设备上删掉的书签都会先作为墓碑保留下来，可以从这里恢复。',
+    '还没有删除记录。在本机删掉的书签会先保留在这里，可以从这里恢复；开启同步后，其它设备上删的也会汇到这里。',
+  // 搜索框在回收站这一屏的口径（2026-10-17：搜索过滤当前这一屏）。
+  'trash.searchPlaceholder': '搜索回收站…',
+  // 有东西、但都被关键词筛掉了 —— 不能说"还没有删除记录"（那是假话）。
+  'trash.noMatch': '没有匹配的条目。',
   'trash.deletedBy': '由 {device} 删除',
   'trash.location': '原位置：{parent}',
   'trash.restore': '恢复',
@@ -603,6 +624,8 @@ export const zhCN = {
   'trash.purgeAllConfirm': '确认清除这 {n} 个',
   'trash.purgeAllNote':
     '这会抹掉<strong>{n}</strong> 个节点{orphanPart}。抹掉之后墓碑也没了 —— <strong>所有设备上都找不回来</strong>，之后的恢复点也不再带上它们。再点一次确认。',
+  'trash.purgeAllNoteOffline':
+    '这会抹掉<strong>{n}</strong> 个节点{orphanPart}，<strong>只在本机生效</strong>：重新连接同步后，这次清除才会传播到其它设备。再点一次确认。',
   'trash.purgeAllNote.orphan': '（{records} 条记录，另有 {n} 个还在的子项会被挂回根目录）',
   'trash.restoreNote': '这次会恢复<strong>{n}</strong> 个节点{extraPart}。确认后再点一次，书签才会被改动。',
   'trash.restoreNote.extra': '，其中 {extra} 个是它需要的上级文件夹或里面的子项{descPart}',
@@ -611,6 +634,9 @@ export const zhCN = {
   'trash.pendingRestoreNote.extra': '；连它一起被删的 {n} 项也会跟着回去',
   'trash.purgeNote':
     '这会抹掉<strong>{n}</strong> 个节点{extraPart}{orphanPart}。所有设备下一轮同步都会抹掉它们，之后拍的新恢复点也不再带上。<strong>更早的恢复点里仍然存着它</strong> —— 回退到那一刻会把它带回来。再点一次确认。',
+  // 断开同步配置后的彻底清除预览（既有约定 修订）：没有"下一轮同步"，不许那么说。
+  'trash.purgeNoteOffline':
+    '这会抹掉<strong>{n}</strong> 个节点{extraPart}{orphanPart}，<strong>只在本机生效</strong>：重新连接同步后，这次清除才会传播到其它设备。<strong>更早的恢复点里仍然存着它</strong> —— 回退到那一刻会把它带回来。再点一次确认。',
   'trash.purgeNote.extra': '（含 {n} 个里面的墓碑子项）',
   'trash.purgeNote.orphan': '，另有 {n} 个还在的子项会被挂回根目录',
   'trash.parentDeleted': '它的上级文件夹也已被删除，会一起回来 —— 否则恢复出来的是没有归属的孤儿。',
@@ -622,17 +648,19 @@ export const zhCN = {
   'trash.notePurge':
     '「彻底删除」：数据会被<strong>删除</strong>，并<strong>同步到其他设备</strong>。',
   'trash.noteGrace':
-    '<strong>宽限期 30 天</strong>：躺满 30 天的墓碑由后台自动彻底清除，受「自动同步」开关管辖。',
-  'trash.conflict.restore': '，另有 {n} 个冲突要你处理（别的设备在这期间也改过）',
-  'trash.conflict.purge': '，另有 {n} 个冲突要你处理（有并发改动把其中几条挡下了）',
+    '<strong>宽限期 30 天</strong>：躺满 30 天的墓碑会被自动彻底清除，不用你动手。',
   'trash.notice.restoreNoop': '这一条已经不需要恢复了，可能别的设备已经把它恢复了。',
   'trash.notice.restoreDone':
-    '已恢复 {n} 条{conflictNote}。它和一次普通编辑没有区别，其它设备会照常合并，有冲突就报出来。',
+    '已恢复 {n} 条。它和一次普通编辑没有区别，其它设备会照常合并，有冲突就报出来。',
+  // 断开同步配置后的恢复（既有约定 修订）：没有任何东西被发出去，不许说"照常合并"。
+  'trash.notice.restoreDoneOffline': '已恢复 {n} 条，都放回了原来的位置。重新连接同步后，这次恢复才会传播。',
   'trash.notice.pendingRestoreDone':
     '已恢复 {n} 条，都回到了原来的位置。这次删除没有同步出去，别的设备不会收到任何变化。',
   'trash.notice.purgeNoop': '这一条已经不在同步状态里了，没有需要清除的东西。',
-  'trash.notice.purgeDone': '已清除 {n} 个节点{conflictNote}。其它设备下一轮同步也会抹掉它们。',
-  'trash.notice.purgeAllDone': '已清除 {n} 个节点{conflictNote}。',
+  'trash.notice.purgeDone': '已清除 {n} 个节点。其它设备下一轮同步也会抹掉它们。',
+  // 断开同步配置后的彻底清除（既有约定 修订）：只在本机生效，等重新连接才传播。
+  'trash.notice.purgeDoneOffline': '已清除 {n} 个节点，只在本机生效。重新连接同步后，这次清除才会传播。',
+  'trash.notice.purgeAllDone': '已清除 {n} 个节点。',
   'trash.toSnapshots': '整个文件夹都不见了？去设置页的「快照」，可以把整棵树退回到它还在的时候。',
 
   'engine.bing': '必应',

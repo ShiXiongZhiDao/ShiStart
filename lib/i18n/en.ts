@@ -171,9 +171,14 @@ export const en: Record<MessageKey, string> = {
   'home.manager': 'Open the browser bookmark manager',
   'home.managerHint': 'Press Ctrl+Shift+O (Cmd+Option+B on macOS) to open the browser bookmark manager.',
   'home.delete.done':
-    'Deleted “{title}”. Syncing now \u2014 it will show up in the settings trash as soon as that finishes.',
+    'Deleted “{title}”. Syncing now \u2014 it will show up in the sidebar trash as soon as that finishes.',
   'home.delete.doneManualSync':
     'Deleted “{title}”. Auto sync is off \u2014 click \u201CSync now\u201D in the settings sync section and it will appear in the trash.',
+  // Sync is off : the delete is recorded as a local tombstone right away, no requests.
+  'home.delete.doneNoSync':
+    'Deleted “{title}”. It is in the sidebar trash now \u2014 you can restore it from there.',
+  'home.delete.doneUnrecoverable':
+    'Deleted “{title}”, but it could not be recorded in the trash \u2014 this one may be gone for good.',
   'home.delete.failed': 'Delete failed: {reason}. You can delete it from the browser bookmark manager instead.',
   'home.copyDone': 'Link copied to the clipboard.',
   'home.open.scriptlet': 'A bookmarklet has to run on its own page — the homepage cannot open it.',
@@ -201,20 +206,23 @@ export const en: Record<MessageKey, string> = {
   'menu.rename': 'Rename',
   'menu.delete': 'Delete bookmark',
   'menu.deleteConfirm': 'Confirm delete',
-  'menu.deleteNote': 'Once deleted it goes to the <strong>trash</strong> in settings, where you can recover it at any time. Click again to confirm.',
+  'menu.deleteNote':
+    'Once deleted it goes to the <strong>trash</strong> in the sidebar, where you can recover it at any time. Click again to confirm.',
   'menu.deleteNoteManualSync':
-    'Once deleted it goes to the <strong>trash</strong> in settings, but auto sync is off \u2014 you will have to sync manually. Click again to confirm.',
-  'menu.deleteNoteFinal': 'Sync is off, so once deleted it <strong>cannot be recovered</strong>. Click again to confirm.',
+    'Once deleted it goes to the <strong>trash</strong> in the sidebar, but auto sync is off \u2014 you will have to sync manually. Click again to confirm.',
+  // Sync is off : deleting keeps it in the trash on this device — still recoverable.
+  'menu.deleteNoteLocal':
+    'Sync is off \u2014 deleting keeps it in the <strong>trash on this device</strong>, where you can recover it at any time. Click again to confirm.',
   // Deleting a folder . An empty folder confirms with two clicks in the menu;
   // a non-empty one must go through the delete-preview dialog.
   'menu.deleteFolder': 'Delete folder',
   'menu.deleteFolderConfirm': 'Confirm delete',
   'menu.deleteFolderNote':
-    'This will delete the empty folder. Once deleted it goes to the <strong>trash</strong> in settings, where you can recover it at any time. Click again to confirm.',
+    'This will delete the empty folder. Once deleted it goes to the <strong>trash</strong> in the sidebar, where you can recover it at any time. Click again to confirm.',
   'menu.deleteFolderNoteManualSync':
-    'This will delete the empty folder. Once deleted it goes to the <strong>trash</strong> in settings, but auto sync is off \u2014 you will have to sync manually. Click again to confirm.',
-  'menu.deleteFolderNoteFinal':
-    'Sync is off, so once deleted it <strong>cannot be recovered</strong>. Click again to confirm.',
+    'This will delete the empty folder. Once deleted it goes to the <strong>trash</strong> in the sidebar, but auto sync is off \u2014 you will have to sync manually. Click again to confirm.',
+  'menu.deleteFolderNoteLocal':
+    'Sync is off \u2014 deleting keeps it in the <strong>trash on this device</strong>, where you can recover it at any time. Click again to confirm.',
   // Delete preview dialog (既有约定 decision 2)
   'home.select.item': 'Select {title}',
   'home.selection.count': '{n} selected',
@@ -225,8 +233,14 @@ export const en: Record<MessageKey, string> = {
   'home.selection.openSkipped': 'Skipped {n} link(s) that cannot be opened directly.',
   'home.selection.deleteTitle': 'Delete {n} item(s)?',
   'home.selection.deleteBody': '{n} of them are folders; their contents go too.',
-  'home.selection.deleteBodyPlain': 'All selected items are bookmarks; they can be restored from the trash after sync.',
-  'home.selection.deleteDone': 'Deleted {n} item(s). Syncing — you can restore them from the trash.',
+  'home.selection.deleteBodyPlain':
+    'All selected items are bookmarks; they can be restored from the trash afterwards.',
+  'home.selection.deleteDone': 'Deleted {n} item(s). You can restore them from the trash.',
+  // Sync is off : the deletes are recorded as local tombstones right away.
+  'home.selection.deleteDoneNoSync':
+    'Deleted {n} item(s). They are in the sidebar trash now \u2014 you can restore them from there.',
+  'home.selection.deleteDoneUnrecoverable':
+    'Deleted {n} item(s), but {m} of them could not be recorded in the trash and may be gone for good.',
   'home.selection.deleteFailed': 'Delete failed: {reason}',
   'home.selection.openNothing': 'Nothing selected can be opened directly.',
   'home.selection.openFailed': 'Open failed: {reason}',
@@ -240,7 +254,9 @@ export const en: Record<MessageKey, string> = {
   'home.folderDelete.samples': 'Including:',
   'home.folderDelete.typedNameLabel': 'Type the folder name to confirm:',
   'home.folderDelete.typedNameMismatch': 'The name does not match. Try again.',
-  'home.folderDelete.noSync': 'Sync is off — once deleted it <strong>cannot be recovered</strong>.',
+  // Sync is off : deleting keeps everything in the trash on this device.
+  'home.folderDelete.localOnly':
+    'Sync is off \u2014 deleting keeps everything in the <strong>trash on this device</strong>, restorable from the sidebar.',
   'home.folderDelete.manualSync':
     'Auto sync is off \u2014 after deleting, click \u201cSync now\u201d once in settings for it to reach the trash.',
   'home.folderDelete.confirm': 'Delete {n} items',
@@ -248,9 +264,14 @@ export const en: Record<MessageKey, string> = {
   'home.folderDelete.loading': 'Counting the folder contents\u2026',
   'home.folderDelete.unreadable': 'This folder can no longer be read \u2014 it may have just been deleted.',
   'home.folderDelete.done':
-    'Deleted the folder \u201c{title}\u201d and everything inside it ({n} items). Syncing now \u2014 once it finishes you can recover them from the trash in settings.',
+    'Deleted the folder \u201c{title}\u201d and everything inside it ({n} items). Syncing now \u2014 once it finishes you can recover them from the trash in the sidebar.',
   'home.folderDelete.doneManualSync':
     'Deleted the folder \u201c{title}\u201d and everything inside it ({n} items). Auto sync is off \u2014 click \u201cSync now\u201d once in settings before they reach the trash.',
+  // Sync is off : the whole subtree goes to the local trash right away.
+  'home.folderDelete.doneNoSync':
+    'Deleted the folder \u201c{title}\u201d and everything inside it ({n} items). They are in the sidebar trash now \u2014 you can restore them from there.',
+  'home.folderDelete.doneUnrecoverable':
+    'Deleted the folder \u201c{title}\u201d and everything inside it ({n} items), but they could not be recorded in the trash \u2014 they may be gone for good.',
   'home.folderDelete.failed':
     'Could not delete the folder: {reason}. You can also tidy folders in the browser bookmark manager.',
   'home.folderDelete.rootRejected':
@@ -315,7 +336,8 @@ export const en: Record<MessageKey, string> = {
   'home.sync.ok': 'Sync: healthy, click to configure',
   // Drag to arrange
   'home.drag.into': 'Into “{title}”',
-  'home.drag.moved': 'Moved “{title}” into “{parent}”.',
+  // A successful move writes nothing to the heading — the undo bar at the bottom already
+  // says the same thing . Only the two cases the bar cannot express stay.
   'home.drag.movedAdjusted':
     'Moved “{title}” into “{parent}”, but one slot earlier than where you dropped it — the browser does not accept appending straight to the end of a different folder.',
   'home.drag.movedNoUndo':
@@ -348,7 +370,6 @@ export const en: Record<MessageKey, string> = {
   'home.edit.undoBar.move': 'Last move: “{title}” into “{parent}”',
   'home.edit.undoDone.create': 'Undone — the new “{title}” has been deleted.',
   'home.edit.undoDone.update': 'Undone — “{title}” is back to “{before}”.',
-  'home.edit.undoDone.move': 'Undone — “{title}” is back where it was.',
   'home.edit.undoFailed': 'Undo failed: {reason}',
   'home.edit.error.apiUnavailable': 'This environment cannot write to browser bookmarks.',
   'home.edit.error.nodeMissing': 'The bookmark to change, or the place it should go back to, no longer exists.',
@@ -608,6 +629,11 @@ export const en: Record<MessageKey, string> = {
   'trash.pendingChip': 'pending',
   'trash.pendingNote':
     'These were <strong>deleted on this device and sync has not picked them up yet</strong>. They are already gone from your browser, but the deletion has not left this device either, so <strong>Restore puts them straight back where they were</strong> (no sync, no network requests). Left alone, they become regular trash entries below once a sync round finishes.',
+  // One line at the top of the panel when sync is off (既有约定 revision, 2026-10-17):
+  // three facts at once — restore is immediate, erasing is local-only, entries clear
+  // themselves after 30 days (computed locally, 既有约定); propagation waits for a reconnect.
+  'trash.offlineNote':
+    'Sync is off: restoring puts bookmarks straight back in your browser; erasing applies to this device only; entries in the trash are erased automatically after 30 days. These changes propagate once you reconnect sync.',
   // Grouped by "one deletion" (既有约定 decision 7); the group root's "N more" chip
   // is the expand toggle .
   'trash.groupExpand': '{n} more',
@@ -619,7 +645,9 @@ export const en: Record<MessageKey, string> = {
   'trash.kindFolder': 'Folder',
   'trash.kindBookmark': 'Bookmark',
   'trash.empty':
-    'No deleted items yet. Once sync is on, anything deleted on any device is kept as a tombstone first, and you can restore it here.',
+    'No deleted items yet. Anything you delete on this device is kept here first so you can restore it; turn on sync and deletions from your other devices show up here too.',
+  'trash.searchPlaceholder': 'Search the trash…',
+  'trash.noMatch': 'No matching items.',
   'trash.deletedBy': 'Deleted by {device}',
   'trash.location': 'Was in: {parent}',
   'trash.restore': 'Restore',
@@ -631,6 +659,8 @@ export const en: Record<MessageKey, string> = {
   'trash.purgeAllConfirm': 'Confirm clearing {n}',
   'trash.purgeAllNote':
     'This erases <strong>{n}</strong> nodes{orphanPart}. The tombstones go too — they become <strong>unrecoverable on every device</strong>, and later restore points will no longer carry them. Click again to confirm.',
+  'trash.purgeAllNoteOffline':
+    'This erases <strong>{n}</strong> nodes{orphanPart}, <strong>this device only</strong>: the erasure reaches your other devices after you reconnect sync. Click again to confirm.',
   'trash.purgeAllNote.orphan':
     ' ({records} entries; {n} live children will be re-parented to the root)',
   'trash.restoreNote':
@@ -644,6 +674,9 @@ export const en: Record<MessageKey, string> = {
     ', and the {n} item(s) deleted along with it come back too',
   'trash.purgeNote':
     'This erases <strong>{n}</strong> nodes{extraPart}{orphanPart}. Every device erases them on its next sync, and restore points taken later will no longer carry them. <strong>Older restore points still contain it</strong> — rolling back to that moment will bring it back. Click again to confirm.',
+  // Erase preview with sync off (既有约定 revision): there is no "next sync", so don't say it.
+  'trash.purgeNoteOffline':
+    'This erases <strong>{n}</strong> nodes{extraPart}{orphanPart}, <strong>this device only</strong>: the erasure reaches your other devices after you reconnect sync. <strong>Older restore points still contain it</strong> — rolling back to that moment will bring it back. Click again to confirm.',
   'trash.purgeNote.extra': ' ({n} tombstoned descendants)',
   'trash.purgeNote.orphan': '; {n} live children will be re-parented to the root',
   'trash.parentDeleted':
@@ -657,21 +690,23 @@ export const en: Record<MessageKey, string> = {
   'trash.notePurge':
     'Permanent delete: the data is <strong>erased</strong> and <strong>synced to your other devices</strong>.',
   'trash.noteGrace':
-    '<strong>Grace period: 30 days</strong> — tombstones that have sat that long are erased automatically in the background, governed by the Auto sync switch.',
-  'trash.conflict.restore':
-    ', plus {n} conflicts for you to resolve (another device edited it in the meantime)',
-  'trash.conflict.purge':
-    ', plus {n} conflicts for you to resolve (concurrent edits blocked some of them)',
+    '<strong>Grace period: 30 days</strong> — tombstones that have sat that long are erased automatically, no action needed.',
   'trash.notice.restoreNoop':
     'Nothing left to restore — another device may have already brought it back.',
   'trash.notice.restoreDone':
-    'Restored {n} item(s){conflictNote}. It is just an ordinary edit, so other devices merge it as usual and report any conflict.',
+    'Restored {n} item(s). It is just an ordinary edit, so other devices merge it as usual and report any conflict.',
+  // Restore notice with sync off (既有约定 revision): nothing was sent, so "merge as usual" is a lie.
+  'trash.notice.restoreDoneOffline':
+    'Restored {n} item(s) back to their original places. This restore propagates once you reconnect sync.',
   'trash.notice.pendingRestoreDone':
     'Restored {n} item(s) to their original places. This deletion never left this device, so your other devices will see no change at all.',
   'trash.notice.purgeNoop': 'This one is no longer in the sync state; there is nothing to erase.',
   'trash.notice.purgeDone':
-    'Erased {n} node(s){conflictNote}. Other devices will erase them on their next sync too.',
-  'trash.notice.purgeAllDone': 'Erased {n} node(s){conflictNote}.',
+    'Erased {n} node(s). Other devices will erase them on their next sync too.',
+  // Erase notice with sync off (既有约定 revision): this device only until a reconnect.
+  'trash.notice.purgeDoneOffline':
+    'Erased {n} node(s) on this device only. The erasure propagates once you reconnect sync.',
+  'trash.notice.purgeAllDone': 'Erased {n} node(s).',
   'trash.toSnapshots':
     'A whole folder gone? Open “Snapshots” in Settings to roll the entire tree back to a moment when it was still there.',
 

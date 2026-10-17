@@ -35,7 +35,8 @@ import {
   readNativeSubtree,
   removeNativeTree,
 } from './bookmark-sync-adapter';
-import { describeNativeError } from './bookmark-edit';
+import { describeNativeError, readNativeNode, readNativeLocation } from './bookmark-edit';
+import { recordLocalTombstones } from './trash';
 import {
   collectSubtreeNativeIds,
   requiresTypedName,
@@ -116,6 +117,11 @@ export interface FolderDeleteResult {
   folderCount: number;
   /** 记进了期望记录的 syncId 数（0 = 这个文件夹从没参与过同步）。 */
   expectedSyncIds: number;
+  /**
+   * 删掉的东西有没有一条找回的路。false 只意味着**本机墓碑没写进去**
+   * （既有约定：没配同步时删除靠它留痕）—— 删除本身已经成功，界面要说实话。
+   */
+  recoverable: boolean;
 }
 
 /**
@@ -145,6 +151,11 @@ export async function deleteFolder(folderId: string): Promise<FolderDeleteResult
     .filter((entry) => nativeIds.has(entry.nativeId))
     .map((entry) => entry.syncId);
 
+  // 删除之前把位置读走（父链 + 逻辑根 + 自己的下标）—— 删掉之后就问不到了，
+  // 本机墓碑的"原位置"与恢复时的落点都靠它。
+  const folderNode = await readNativeNode(folderId);
+  const location = await readNativeLocation(folderNode);
+
   await writeFolderDeleteExpectation({
     at: Date.now(),
     rootTitle: root.title ?? '',
@@ -159,7 +170,22 @@ export async function deleteFolder(folderId: string): Promise<FolderDeleteResult
     throw new FolderDeleteError('write-failed', describeNativeError(error));
   }
 
-  return { bookmarkCount, folderCount, expectedSyncIds: expectedSyncIds.length };
+  // 没配同步时，整棵子树记进本机墓碑—— 没有下一轮对账，
+  // 不记就等于这台机器上永久消失。记不进去不影响删除本身，但界面上要说实话。
+  let recoverable = true;
+  try {
+    await recordLocalTombstones({
+      parentNativeId: folderNode.parentId ?? null,
+      logicalRootId: location.logicalRootId,
+      index: folderNode.index ?? 0,
+      subtree: root,
+      ancestors: location.ancestors,
+    });
+  } catch {
+    recoverable = false;
+  }
+
+  return { bookmarkCount, folderCount, expectedSyncIds: expectedSyncIds.length, recoverable };
 }
 
 // ---------------------------------------------------------------- 期望记录

@@ -1,0 +1,14 @@
+{
+  "extensionName": {
+    "message": "师兄起页 ShiStart - 轻量书签主页",
+    "description": "扩展名。出现在商店、chrome://extensions 与安装确认弹窗里。"
+  },
+  "extensionDescription": {
+    "message": "在新标签页中快速查看和搜索浏览器书签，可选通过 WebDAV 在多浏览器间同步。",
+    "description": "扩展描述。出现在商店详情页与 chrome://extensions 的卡片上。"
+  },
+  "actionTitle": {
+    "message": "打开师兄起页书签主页",
+    "description": "工具栏图标的悬停提示。"
+  }
+}

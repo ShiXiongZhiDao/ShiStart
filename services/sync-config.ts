@@ -132,3 +132,14 @@ export async function clearSyncConfig(): Promise<void> {
 export function isConfigured(config: SyncConfig): boolean {
   return config.baseUrl.trim() !== '' && config.username.trim() !== '' && config.spaceId !== '';
 }
+
+/**
+ * 实际参与同步的根。**没配同步（含曾经配过又断开）时用默认的两根**。
+ *
+ * 回收站的两档视图与就地重建都必须在零配置下继续算（既有约定 修订，2026-10-17）：
+ * 墓碑存在本机基线里，断开配置不会删它，恢复也不需要同步配置 —— 半路把根收成空集，
+ * 那些墓碑就在视图里凭空消失。
+ */
+export function effectiveEnabledRoots(config: SyncConfig): readonly string[] {
+  return isConfigured(config) ? config.enabledRoots : DEFAULT_SYNC_CONFIG.enabledRoots;
+}

@@ -46,7 +46,7 @@ export interface SyncPresence {
    * 不能只有设置页一处看得见。同步成功时引擎会清掉它，所以它天然是"当前事实"。
    */
   restorePointError: Ref<string | null>;
-  /** 配过同步没有。**侧边栏的回收站入口是 `v-if="syncConfigured"`**。 */
+  /** 配过同步没有。删除确认那行文案与侧边栏回收站入口都看它（入口是 `syncConfigured || trashCount > 0`）。 */
   syncConfigured: Ref<boolean>;
   /** 「自动同步」开着没有。与 `syncConfigured` 是两个事实，都影响"删了能不能找回"的措辞。 */
   autoSyncOn: Ref<boolean>;
@@ -140,15 +140,18 @@ export function useSyncPresence(deps: SyncPresenceDeps = {}): SyncPresence {
    * 一次全读，而不是只刷回收站计数 —— 同步是在**别处**跑完的，所以这一页关于同步的
    * **每个**事实都陈旧了：
    * - `syncStatus` → 顶栏那颗状态点（**只在失败/冲突时挂出来**，既有约定 修订）；
-   * - `syncConfigured` / `autoSyncOn` → 侧边栏的回收站入口是 `v-if="syncConfigured"`，
-   *   而它只在挂载时读过一次。不重读的话，「一键连接」之后那个入口根本不出现，
-   *   得手动刷新页面才行（用户报过：连接后书签都显示了，回收站却没有）；
+   * - `syncConfigured` / `autoSyncOn` → 侧边栏的回收站入口是
+   *   `v-if="syncConfigured || trashCount > 0"`，而它只在挂载时读过一次。不重读的话，
+   *   「一键连接」之后那个入口根本不出现，得手动刷新页面才行
+   *   （用户报过：连接后书签都显示了，回收站却没有）；
    * - 回收站角标与面板 —— 它们是墓碑的视图，同步跑完才有内容。
    */
   async function refreshAfterSync(): Promise<void> {
     await refreshSyncStatus();
-    // 顺序是**承重**的：`refreshTrashCount` 早退于 `syncConfigured === false`，
-    // 所以它必须在重读配置**之后**跑，否则刚连接完那一次会算出 0。
+    // 先重读配置、再算角标：刚连接完那一次要两个值在同一拍里一起到位
+    // （入口的显隐与角标上的数）。2026-10-17 之前这里还多一层"早退"依赖——
+    // 角标曾因 !syncConfigured 直接归零，顺序错了连接后也算不出 1；那个早退已删，
+    // 顺序现在只是让两个值一起到达，不再承载正确性。
     await refreshMenuCapabilities();
     await refreshTrashCount();
     deps.onAfterSync?.();

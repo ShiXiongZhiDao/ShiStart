@@ -1,6 +1,6 @@
 # 隐私政策 / Privacy Policy
 
-> 简体中文在下，English 在后。最后更新：2026-10-17（对应 1.2.1）
+> 简体中文在下，English 在后。最后更新：2026-10-17（书签可编辑后的口径）
 
 ---
 
@@ -12,8 +12,9 @@
 
 ### 你的数据在哪
 
-- **书签**：扩展读的是浏览器自己的书签树，实时读取、不另存副本、不上传。
-  它不创建、不改名、不移动、不删除你的书签 —— 要增删改请进浏览器自带的书签管理器。
+- **书签**：扩展读的是浏览器自己的书签树，每次打开新标签页实时读取、不另存副本。
+  你在主页里整理书签（新建、改名、拖拽、删除）时，改动直接写回浏览器书签；
+  删除先进扩展内的回收站，30 天内可恢复。除非你开启同步，书签数据不会离开这台机器。
 - **界面偏好**：配色、明暗、背景图案、语言、搜索引擎、每行卡片数、侧边栏宽度等，
   存在浏览器自己的扩展存储里，只在本机。
 - **最近访问**：右缘那个面板读的是浏览器自己的浏览历史，实时读取、不留副本、不上传。
@@ -42,7 +43,8 @@
 ### 权限
 
 安装时浏览器会列出五项权限，用途逐个写在仓库 README 的「权限」一节里。
-其中只有 `history` 属于"读用户数据"，它只为右缘那个面板服务，不碰任何网站的数据。
+其中只有 `history` 会在安装时弹浏览器警告（「读取您的浏览历史」）—— 它只为右缘那个
+面板服务，不碰任何网站的数据。
 
 ### 不共享、不出售
 
@@ -64,8 +66,10 @@
 ### Where your data lives
 
 - **Bookmarks**: the extension reads the browser's own bookmark tree, live, on every
-  new tab. No copy is kept and nothing is uploaded. It never creates, renames, moves
-  or deletes your bookmarks — use the browser's own bookmark manager to edit them.
+  new tab; no copy is kept. When you organize bookmarks on the page — create, rename,
+  drag, delete — those edits are written back to the browser's own bookmarks;
+  deletions go to the in-extension trash first and can be restored within 30 days.
+  Unless you turn sync on, bookmark data never leaves this machine.
 - **UI preferences**: palette, light/dark, background pattern, language, search
   engine, cards per row, sidebar width and the rest are stored in the browser's
   extension storage, local to this machine.
@@ -99,9 +103,9 @@ you are back to fully local operation.**
 ### Permissions
 
 The browser lists five permissions at install time; what each one is for is spelled
-out in the "Permissions" section of the repository README. Only `history` counts as
-reading user data, and it exists solely for the right-edge panel — it touches no
-website's data.
+out in the "Permissions" section of the repository README. Only `history` triggers
+an install-time warning ("Read your browsing history"), and it exists solely for the
+right-edge panel — it touches no website's data.
 
 ### No sharing, no selling
 

@@ -284,7 +284,7 @@ onUnmounted(() => {
         <p v-if="confirming && (!isBookmark ? folderIsEmpty : true)" class="card-menu-note">
           <span v-if="recovery === 'auto'" v-html="tRich(isBookmark ? 'menu.deleteNote' : 'menu.deleteFolderNote')"></span>
           <span v-else-if="recovery === 'manual'" v-html="tRich(isBookmark ? 'menu.deleteNoteManualSync' : 'menu.deleteFolderNoteManualSync')"></span>
-          <span v-else v-html="tRich(isBookmark ? 'menu.deleteNoteFinal' : 'menu.deleteFolderNoteFinal')"></span>
+          <span v-else v-html="tRich(isBookmark ? 'menu.deleteNoteLocal' : 'menu.deleteFolderNoteLocal')"></span>
         </p>
       </template>
     </div>

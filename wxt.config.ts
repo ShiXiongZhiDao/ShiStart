@@ -12,8 +12,26 @@ export default defineConfig({
     zipSources: false,
   },
   manifest: {
-    name: '师兄起页 ShiStart - 轻量书签主页',
-    description: '在新标签页中快速查看和搜索浏览器书签，可选通过 WebDAV 在多浏览器间同步。',
+    // ★ 这三处**不许写回中文**。
+    //
+    // 扩展有两层"中英"，Chrome 只认这一层：
+    // - 商店里的名字、chrome://extensions 的卡片、工具栏悬停提示 —— 由 Chrome 自己渲染，
+    //   它只读 `default_locale` + `_locales/<语言>/messages.json` + 这里的 `__MSG_xxx__`。
+    //   应用内那套 `lib/i18n`（zh-CN.ts / en.ts）它一个字都读不到。
+    // - 新标签页和设置页里的按钮与提示 —— 那一层归 `lib/i18n` 管，不进这两个文件。
+    //
+    // 硬约束：**写了 default_locale，Chrome 就强制要求 `_locales/<它>/messages.json` 存在**，
+    // 缺了不是告警、是直接装不上 ⇒ 那两份文件和这一行必须一起进包，不能分两次发。
+    // 目录名是**下划线** `zh_CN`（Chrome 的规范），跟应用内的 `zh-CN`（连字符）是两套命名，
+    // 别互相"顺手统一"。
+    //
+    // 占位符拼错或 messages.json 里缺 key，Chrome **不报错**：实测把 zh_CN 的
+    // `extensionName` 改错名后，中文 UI 下照样显示**英文名**（静默回落到这儿那份），
+    // 构建全绿、安装成功、没有任何提示 —— 所以 `lib/manifest-i18n.test.ts` 钉住它（含负例）。
+    name: '__MSG_extensionName__',
+    description: '__MSG_extensionDescription__',
+    // 默认英文：英文浏览器的用户看到的不是一串中文。中文浏览器的用户走 zh_CN 那份。
+    default_locale: 'en',
     // 同步需要新增两项：alarms（定时同步）、optional_host_permissions（用户填了服务器地址后
     // 按**最小来源**在运行时申请）。仍然不申请 tabs / cookies / webRequest / <all_urls>。
     // `history` 是 2026-10-16 加的**唯一**一个"读用户数据"的新权限：
@@ -22,11 +40,18 @@ export default defineConfig({
     // 「读取您的浏览历史」警告 —— 这是明知代价换的功能，README 的权限段已如实改写。
     permissions: ['bookmarks', 'favicon', 'storage', 'alarms', 'history'],
     optional_host_permissions: ['https://*/*', 'http://*/*'],
-    // 固定扩展 id。未打包加载时，Chrome/Edge 默认用"目录绝对路径"派生 id，
-    // 一旦仓库换了路径（换目录、换机器、换 worktree）id 就会变，IndexedDB 的 origin
-    // 随之改变 —— 同步状态（映射/基线/游标）会读不到，被当成"首次同步"处理。
-    // 这个 key 是 SPKI 公钥的 base64（无换行），只影响 id，不是私钥，可公开。
-    key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0ZDq+PzOtWCsOXeHL1uBAUHDHLDlkfY8TMKTCx7L9/LEORpp5bFm2UpbSQ02htqlswaeVbJEAHIFdQzwudK/kxBNrUimNamLiz8W5jt5QHFPtm78VsQmWQ7bdem4WZMiCwXJ+Kk/s04NqIl8avwcPmQhXEP1SIA7D6Z3dlAhbd1yCqzTg+zcbT5EMVYdzhsIf/AA69Ns5KCtZHUnaf2luDyXbu+B2zmp6h+tjCMsyHYhFAN1LpMuJWSiDN7E34uAR3/IjqF1Oksq4kEEO4aArIazmCLfIFFJi2YlM8+k1zVUfdPO2WavQjDX9qO6Ua4jEDt4UEqanOXvPk9t2CWsHQIDAQAB',
+    // **清单里不放 `key`**（2026-10-17 移除；既有约定 修订、既有约定 修订）。
+    //
+    // 这里曾经放着一个 SPKI 公钥来固定扩展 ID —— 未打包加载时 Chrome 用"目录绝对路径"
+    // 派生 id，换目录 / 换机器 id 就变，IndexedDB 的 origin 跟着变，同步状态
+    // （映射 / 基线 / 游标）读不到（既有约定 记的就是那次事故）。代价是
+    // **Chrome 应用商店拒收带 `key` 的清单**（上传报"清单文件中不得包含『key』字段"），
+    // 只能出两份包、上传时容易拿错。
+    //
+    // 现在选"不带 key"：`pnpm zip` 的产物可以直接传商店。随之而来的规矩是
+    // **别移动加载目录**：id 会变，本地状态（设置 + 同步基线）读不到，需要重新配一次
+    // WebDAV。云端不受影响 —— 重配后的第一次同步会采纳远端（墓碑也在里面），不会重复。
+    // 详见 既有约定 的修订一节。
     chrome_url_overrides: {
       newtab: 'newtab.html',
     },
@@ -40,7 +65,7 @@ export default defineConfig({
     // 点击工具栏图标 = 打开书签主页（行为在 entrypoints/background.ts 里定义）。
     // 这里声明 default_title，让图标 hover 有说明；不需要任何权限。
     action: {
-      default_title: '打开师兄起页书签主页',
+      default_title: '__MSG_actionTitle__',
       default_icon: {
         16: 'icon/16.png',
         32: 'icon/32.png',

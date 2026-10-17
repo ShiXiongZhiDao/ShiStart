@@ -898,6 +898,20 @@ body.is-resizing {
   margin-top: var(--sp-5);
 }
 
+/* 回收站那一屏的外壳：只为了在上面挂一行通知。
+   主区浏览屏的通知长在 .section-head 里（右对齐贴着标题行），回收站没有那个头 ——
+   这里让通知左对齐，跟下面"回收站"标题一条线（既有约定 修订三）。
+   选择器要比 .hint 更具体，否则 .hint 的 text-align: right 会盖回来。 */
+.trash-host {
+  display: flex;
+  flex-direction: column;
+}
+
+.trash-host .trash-host-notice {
+  margin-top: var(--sp-5);
+  text-align: left;
+}
+
 .sidebar-foot {
   margin-top: auto;
   /* 不再用 divider：与目录树之间靠留白分组。 */

@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/ShiXiongZhiDao/ShiStart/main/public/icon/128.png" alt="ShiStart" width="88"></p>
+<p align="center"><img src="public/icon/128.png" alt="ShiStart" width="88"></p>
 
 <h1 align="center">ShiStart</h1>
 
@@ -6,7 +6,9 @@
 
 <p align="center"><strong>English</strong> · <a href="./README.md">简体中文</a></p>
 
-<p align="center">Chrome / Edge · Manifest V3 · Data stays on your machine · Not on any store yet</p>
+<p align="center"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT licensed"> <img src="https://img.shields.io/badge/browsers-Chrome%20%C2%B7%20Edge-blue" alt="Chrome and Edge"> <img src="https://img.shields.io/badge/manifest-MV3-lightgrey" alt="Manifest V3"> <img src="https://img.shields.io/badge/data-local_only-yellowgreen" alt="Local only"> <img src="https://img.shields.io/badge/store-not_published-orange" alt="Not on any store yet"></p>
+
+<p align="center"><img src="assets/screenshots/en/home.png" alt="The home page: folders laid out as groups and bookmark cards" width="920"></p>
 
 ---
 
@@ -24,18 +26,71 @@ The things that matter, up front:
 
 - **It reads the browser's native bookmark tree** on every new tab. No copy is kept,
   nothing is uploaded (unless you turn sync on — see below).
-- **Read-only**: it never creates, renames, moves, or deletes your bookmarks. To edit
-  them, use the browser's own bookmark manager. **Bookmark import is deliberately
-  not offered** — that would open a second write path.
+- **Edits go straight to the native tree**: organizing bookmarks on the page — new
+  folder, rename, drag to reorder, delete — writes back to the browser's own
+  bookmarks; there is no second copy to fall out of step. Deletions land in the
+  in-extension trash first and can be restored within 30 days. **Bookmark import
+  is deliberately not offered** — that would open a second write path.
 - The UI speaks **Simplified Chinese and English**, following your browser by default.
 - Optional **WebDAV sync** keeps bookmarks and UI preferences in step across browsers.
   Off by default; you supply the server and credentials.
+
+## Screenshots
+
+### The home page
+
+With the folder tree collapsed you get this: a folder with children becomes a **group** with
+a header, a leaf folder a plain run of cards — one big folder fits on one screen. The search
+box at the top matches the **whole library** — a bookmark outside the current folder still
+turns up.
+
+<p align="center"><img src="assets/screenshots/en/home.png" alt="The home page: groups and bookmark cards" width="880"></p>
+
+### Light and dark
+
+Same layout, two palettes. The palette button in the top-right corner switches theme and
+background pattern; card columns follow the window width, so a wider window simply holds
+more.
+
+| Light | Dark |
+|---|---|
+| <img src="assets/screenshots/en/home.png" alt="Light theme, folder tree collapsed" width="420"> | <img src="assets/screenshots/en/dark.png" alt="Dark theme with the folder tree pinned open" width="420"> |
+
+### The trash
+
+Deleted bookmarks land here first and wait **30 days** — each entry says which folder it
+came from and when it was deleted, and *Restore* puts it back where it was: back into the
+browser's native tree, not into a copy of it.
+
+<p align="center"><img src="assets/screenshots/en/trash.png" alt="The trash: every entry names its source folder and deletion time" width="880"></p>
+
+### Snapshots
+
+With sync on, every successful sync leaves a **full snapshot** in the cloud: time, size,
+and a *Roll back to this snapshot* button. Sync and snapshots are two different jobs —
+sync keeps "now" consistent, snapshots take you back to "then".
+
+Retention: anything from the last 30 days is kept, and older ones are kept up to the most
+recent 20. Unchanged content is not stored twice (one copy serves the whole sync space,
+distinct content gets one each). Rolling back is **forward-only**: the current state is
+saved as a new snapshot first.
+
+<p align="center"><img src="assets/screenshots/en/snapshots.png" alt="Snapshots: one full snapshot per successful sync, rollable back as a whole" width="700"></p>
+
+### Sync
+
+Point it at the WebDAV folder you already own (Nutstore, Nextcloud, a Synology box) with
+your username and an app password. Three sections fold up underneath: sync scope, automatic
+sync, and interface preferences — exactly what would be uploaded, and how often, is written
+there; turn it off whenever you like. Leave the address empty and everything stays local.
+
+<p align="center"><img src="assets/screenshots/en/sync.png" alt="Sync: WebDAV address, username and app password" width="700"></p>
 
 ## Permissions: five, and only five
 
 | Permission | Why it is needed |
 | --- | --- |
-| `bookmarks` | Read the bookmark tree for display, folder filtering and local search. Read-only — never modified, never uploaded |
+| `bookmarks` | Read the bookmark tree for display, folder filtering and local search; edits made on the page (create/rename/drag/delete) are written back through the same permission |
 | `favicon` | Show site icons through the browser's own mechanism; falls back to a letter when unavailable |
 | `storage` | Store UI preferences (palette, light/dark, background pattern, language, search engine, cards per row, sidebar width, …) |
 | `alarms` | Polling for optional sync (every 30 minutes by default) |
@@ -95,6 +150,14 @@ uploaded (bookmarks plus 12 UI preferences), and you can turn it off at any time
 **Can I turn off "Recently visited"?**
 
 Yes — Settings → General. It reads your browser's own history and keeps no copy.
+
+**Will snapshots pile up forever?**
+
+No, they converge on their own: everything from the last 30 days stays, older ones are
+kept up to the most recent 20 and the rest are cleaned up. Snapshots only exist with sync
+on; without it the page is empty. Deleting one is **shared** — delete it here and the other
+devices lose it too, so think twice before removing what might be the only safety net
+elsewhere.
 
 **Can I export my bookmarks and settings?**
 

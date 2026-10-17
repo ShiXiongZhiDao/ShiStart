@@ -27,15 +27,42 @@ export class NotReadyError extends Error {
   }
 }
 
-/** 把改好的节点集落成本机文档并上传。返回推进后的 clock。 */
+/**
+ * 把改好的节点集落成本机文档并上传。返回推进后的 clock。
+ *
+ * **没配同步（含断开配置）时只落本机、不上传**（2026-10-17 修，既有约定 修订）：
+ * 墓碑存在本机基线里，断开配置不会删它，回收站的恢复与彻底清除因此必须照样能做完
+ * —— 只是这些改动要等重新连接之后才传播。spaceId 沿用本机文档里的那个：
+ * 空间身份归远端所有，一次纯本机写入没有资格改它。
+ *
+ * 反过来，**配了同步却缺凭据仍然抛错**：那是明确的坏状态（密码被清了），
+ * 该让用户回设置页补上，而不是悄悄写一份传不出去的状态。
+ */
 export async function commitLocalState(nodes: Record<string, SyncNodeState>): Promise<number> {
   const config = await loadSyncConfig();
-  if (!isConfigured(config)) throw new NotReadyError('还没有配置 WebDAV 同步。');
+  const meta = await readMeta();
+  const writerId = meta.writerId || newWriterId();
+
+  if (!isConfigured(config)) {
+    const baseline = await readBaselineDoc();
+    // 连基线都没有（从没同步过）⇒ 没有什么可提交的，按老行为报"还没配置"。
+    if (!baseline) throw new NotReadyError('还没有配置 WebDAV 同步。');
+    const doc: StateDocument = {
+      format: SYNC_STATE_FORMAT,
+      version: SYNC_STATE_VERSION,
+      spaceId: baseline.spaceId,
+      writerId,
+      clock: baseline.clock + 1,
+      writtenAt: Date.now(),
+      nodes,
+    };
+    await writeBaselineDoc(doc);
+    return doc.clock;
+  }
+
   const credential = await loadCredential();
   if (!credential) throw new NotReadyError('缺少 WebDAV 凭据，请重新填写密码。');
 
-  const meta = await readMeta();
-  const writerId = meta.writerId || newWriterId();
   const baseline = await readBaselineDoc();
   const clock = (baseline?.clock ?? 0) + 1;
 

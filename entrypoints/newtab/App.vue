@@ -32,7 +32,7 @@ import {
   buildSearchUrl,
 } from '../../lib/search-engines';
 import { resolveSelectedFolder } from '../../services/settings-service';
-import { removeBookmarkNode } from '../../services/bookmarks-service';
+import { deleteBookmark } from '../../services/bookmark-delete';
 import { SYNC_SOON_MESSAGE } from '../../lib/messages';
 import BookmarkFormDialog from '../../components/BookmarkFormDialog.vue';
 import EnginePicker from '../../components/EnginePicker.vue';
@@ -630,6 +630,15 @@ const activeFolder = computed(() => findFolderNode(roots.value, selectedFolderId
 const activePath = computed(() => folderPathOf(roots.value, selectedFolderId.value));
 
 /**
+ * 侧边栏里"哪一行是当前选中"。
+ *
+ * 选中态是**整条侧边栏**的一件事：回收站与文件夹行互斥，同一时刻只能亮一条。
+ * 回收站那一屏没有"某个文件夹"的概念，所以这里传空 —— 否则 `selectedFolderId`
+ * 还原封不动，两个都亮（2026-10-17 用户报）。
+ */
+const sidebarSelectedId = computed(() => (activeView.value === 'browse' ? selectedFolderId.value : ''));
+
+/**
  * 侧边栏目录树的展开态：一级目录默认铺开、点行开合、
  * 选中的深层目录自动展开祖先。
  */
@@ -656,10 +665,13 @@ function clearSearch(): void {
   searchInput.value?.focus();
 }
 
-// 一开始搜索就切回浏览屏：搜索框在主区顶栏，在回收站那一屏打字却什么都搜不到最费解。
+// 搜索框过滤的是**当前这一屏**：浏览屏过滤书签树，回收站过滤墓碑与待同步档
+// （面板收 `:filter` 自己筛）。
+// 早先这里一打字就把视图切回浏览屏 —— 那时的理由是"在回收站那一屏打字却什么都搜不到
+// 最费解"，可切走之后变成了**回收站永远搜不到**：回收站里的条目不在书签树里，
+// 浏览屏的过滤对它无话可说（2026-10-17 用户报「回收站搜索无法命中」）。
 watch(searchText, (text) => {
   const searching = text.trim() !== '';
-  if (searching) activeView.value = 'browse';
   // 只在"进出搜索态"那一刻换视图身份；同一个搜索态里继续打字不换 —— 否则每敲一字整页闪。
   // 仍在回收站屏时不动键：清搜索不该把"回收站"误判成一次视图切换。
   if (activeView.value === 'browse') {
@@ -765,6 +777,15 @@ const { dragging, hintZone, begin, cancel, over, drop, registerDropHandler } = u
 const editEnabled = computed(
   () => settings.value.editBookmarks && activeView.value === 'browse',
 );
+
+/**
+ * 侧边栏文件夹行的右键菜单开不开。
+ *
+ * **与当前在看哪一屏无关**：侧边栏两种视图里都在，管理一个文件夹跟在回收站里还是
+ * 浏览屏里无关。早先这里传的是 `editEnabled`（只认浏览屏）⇒ 选中回收站后右键文件夹
+ * 毫无反应（2026-10-17 用户报）。
+ */
+const sidebarMenuEnabled = computed(() => settings.value.editBookmarks);
 
 /**
  * 「上一次改动」的来处（既有约定 提出、既有约定 泛化）。
@@ -939,13 +960,16 @@ async function handleDrop(request: DropRequest): Promise<void> {
   try {
     const result = await moveBookmarkNode(outcome.resolution);
     lastEdit.value = result.record;
+    // **成功移动不往标题行写一句。** 底部那条撤销条已经说了「上一次移动：把「X」移到了「Y」」
+    // 还带着撤销按钮，标题行再复读一遍只是噪音（2026-10-17 用户要求去掉）。
+    // 只有撤销条说不清的那两种才留文字：没记下来（撤销不可用）、位置被浏览器调整过。
     const title = result.record?.nodeTitle ?? '';
     const parent = result.record?.toParentTitle ?? '';
-    notice.value = !result.undoSaved
-      ? t('home.drag.movedNoUndo', { title, parent })
-      : result.adjusted
-        ? t('home.drag.movedAdjusted', { title, parent })
-        : t('home.drag.moved', { title, parent });
+    if (!result.undoSaved) {
+      notice.value = t('home.drag.movedNoUndo', { title, parent });
+    } else if (result.adjusted) {
+      notice.value = t('home.drag.movedAdjusted', { title, parent });
+    }
   } catch (error) {
     notice.value = t('home.drag.failed', { reason: dragErrorText(error) });
   }
@@ -1107,6 +1131,19 @@ const {
   registerActionHandler,
 } = useItemMenu();
 
+/**
+ * 右键菜单里「新建 / 重命名 / 删除」那一组显不显示。
+ *
+ * 主区的卡片只在浏览屏存在（回收站那一屏主区是面板，没有卡片可点）；但**侧边栏的
+ * 文件夹两种视图里都在**，管理它与当前在看哪一屏无关 —— 否则在回收站里右键文件夹，
+ * 菜单即使弹出来也只有"打开"那几项。
+ */
+const menuEditEnabled = computed(
+  () =>
+    settings.value.editBookmarks &&
+    (activeView.value === 'browse' || menuRequest.value?.target.kind === 'folder'),
+);
+
 function openItemMenuFor(target: MenuTarget, event: MouseEvent): void {
   openMenuAt(target, event);
   // 顺手把菜单要用的几个事实刷新一遍（见 refreshMenuCapabilities 的说明）。
@@ -1238,24 +1275,34 @@ async function openNonWebBookmark(item: BookmarkViewItem): Promise<void> {
 
 /**
  * 删除。**不做任何自创的删除语义** —— 就是调用浏览器 API 把节点删掉，
- * 与用户在书签管理器里按删除键完全等价。同步侧会在下一轮对账时发现它少了，
- * 照常生成删除操作、照常传播、照常留下墓碑进回收站（见 既有约定）。
+ * 与用户在书签管理器里按删除键完全等价。
+ *
+ * 删掉之后去哪儿分三种（recoveryMode）：
+ * - 配了同步且自动同步开着 ⇒ 下一轮对账把它变成墓碑，照常传播；
+ * - 配了同步但自动同步关着 ⇒ 先进待同步档，要手动同步一次才传播；
+ * - **没配同步 ⇒ 当场记一笔本机墓碑**—— 没有下一轮对账，
+ *   不记就等于这台机器上永久消失。恢复是零网络的，侧边栏回收站里看得见。
  *
  * 删除成功后不主动刷新：`onRemoved` 会被触发，`useBookmarks` 整树重读，卡片自己消失。
- * 也不强制立刻同步 —— 那是 `autoSync` 开关与请求预算的事。
  */
 async function handleMenuRemove(): Promise<void> {
   const target = menuRequest.value?.target;
   if (!target || target.kind !== 'bookmark') return;
   try {
-    await removeBookmarkNode(target.id);
+    const result = await deleteBookmark(target.id);
     closeMenu();
     // **删完立刻同步**，不等后台那条 30 秒的防抖 alarm —— 见 `earlySync` 的说明。
     requestEarlySync();
-    notice.value =
-      recoveryMode.value === 'manual'
+    // 角标跟着这次删除走：没配同步时没有"同步跑完"的广播来刷它，
+    // 不刷的话删完入口半天不出现。
+    void refreshTrashCount();
+    notice.value = !result.recoverable
+      ? t('home.delete.doneUnrecoverable', { title: target.title })
+      : recoveryMode.value === 'manual'
         ? t('home.delete.doneManualSync', { title: target.title })
-        : t('home.delete.done', { title: target.title });
+        : recoveryMode.value === 'none'
+          ? t('home.delete.doneNoSync', { title: target.title })
+          : t('home.delete.done', { title: target.title });
   } catch (error) {
     closeMenu();
     const reason = error instanceof Error ? error.message : String(error);
@@ -1297,11 +1344,16 @@ async function executeFolderDelete(input: {
     const result = await deleteFolder(input.id);
     // **删完立刻同步**，与书签删除同一条理由：可找回的窗口依赖它。
     requestEarlySync();
+    // 角标跟着这次删除走（没配同步时没有广播来刷，既有约定）。
+    void refreshTrashCount();
     const count = result.bookmarkCount + result.folderCount;
-    notice.value =
-      recoveryMode.value === 'manual'
+    notice.value = !result.recoverable
+      ? t('home.folderDelete.doneUnrecoverable', { title: input.title, n: count })
+      : recoveryMode.value === 'manual'
         ? t('home.folderDelete.doneManualSync', { title: input.title, n: count })
-        : t('home.folderDelete.done', { title: input.title, n: count });
+        : recoveryMode.value === 'none'
+          ? t('home.folderDelete.doneNoSync', { title: input.title, n: count })
+          : t('home.folderDelete.done', { title: input.title, n: count });
     // 删掉的正是当前所在目录（或它的某个祖先）⇒ 跳到删除点的父目录。
     // 既有的"文件夹没了退回全部"兜底仍然留着，但主动导航比让兜底擦屁股好。
     if (activePath.value.some((segment) => segment.id === input.id) && input.parentId) {
@@ -1465,16 +1517,19 @@ async function executeRemoveSelected(): Promise<void> {
   }
 
   let failed = 0;
+  let unrecoverable = 0;
   for (const item of bookmarks) {
     try {
-      await removeBookmarkNode(item.id);
+      const result = await deleteBookmark(item.id);
+      if (!result.recoverable) unrecoverable += 1;
     } catch {
       failed += 1;
     }
   }
   for (const folder of folders) {
     try {
-      await deleteFolder(folder.id);
+      const result = await deleteFolder(folder.id);
+      if (!result.recoverable) unrecoverable += 1;
     } catch {
       failed += 1;
     }
@@ -1483,10 +1538,16 @@ async function executeRemoveSelected(): Promise<void> {
   clearSelection();
   // 与单条删除同一条理由：可找回的窗口依赖这一轮尽快同步。
   requestEarlySync();
+  // 角标跟着这批删除走（没配同步时没有广播来刷，既有约定）。
+  void refreshTrashCount();
   notice.value =
     failed > 0
       ? t('home.selection.deletePartial', { n: failed })
-      : t('home.selection.deleteDone', { n: total });
+      : unrecoverable > 0
+        ? t('home.selection.deleteDoneUnrecoverable', { n: total, m: unrecoverable })
+        : recoveryMode.value === 'none'
+          ? t('home.selection.deleteDoneNoSync', { n: total })
+          : t('home.selection.deleteDone', { n: total });
 }
 
 /**
@@ -1615,12 +1676,16 @@ async function undoLastChange(): Promise<void> {
   try {
     const record = await undoLastEdit();
     lastEdit.value = null;
-    notice.value =
-      record.kind === 'create'
-        ? t('home.edit.undoDone.create', { title: record.nodeTitle })
-        : record.kind === 'update'
-          ? t('home.edit.undoDone.update', { before: record.beforeTitle })
-          : t('home.edit.undoDone.move', { title: record.nodeTitle });
+    // **移动的撤销不写标题行。** 卡片当场回到原位、底部撤销条同时消失 —— 两处都在说
+    // "成了"，标题行再复读一句「已撤销 —— 回到了原来的位置」只是噪音
+    // （2026-10-17 用户要求去掉，与 既有约定 修订同一个取向）。
+    // 新建 / 改名的撤销仍留一句带名字的话：那两格的视觉变化容易被错过
+    // （改名尤其 —— 标题还可能被省略号截断）。
+    if (record.kind === 'create') {
+      notice.value = t('home.edit.undoDone.create', { title: record.nodeTitle });
+    } else if (record.kind === 'update') {
+      notice.value = t('home.edit.undoDone.update', { before: record.beforeTitle });
+    }
   } catch (error) {
     // 失败时**不清记录**：撤销还能再试一次，条子留着比悄悄消失诚实。
     notice.value = t('home.edit.undoFailed', { reason: dragErrorText(error) });
@@ -1821,10 +1886,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
       <SidebarNav
         v-if="status === 'ready' && roots.length > 0"
         :roots="roots"
-        :selected-id="selectedFolderId"
+        :selected-id="sidebarSelectedId"
         :is-expanded="isExpanded"
         :drag-enabled="dragEnabled"
-        :menu-enabled="editEnabled"
+        :menu-enabled="sidebarMenuEnabled"
         @select="selectFolder"
         @toggle="toggleExpand"
       />
@@ -1836,6 +1901,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
           type="button"
           class="nav-item trash-entry"
           :class="{ active: activeView === 'trash' }"
+          :aria-current="activeView === 'trash' ? 'page' : undefined"
           @click="openTrash"
         >
           <svg
@@ -1932,8 +1998,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                 class="search-input"
                 type="search"
                 autocomplete="off"
-                :placeholder="t('home.searchPlaceholder')"
-                :aria-label="t('home.searchAria')"
+                :placeholder="activeView === 'trash' ? t('trash.searchPlaceholder') : t('home.searchPlaceholder')"
+                :aria-label="activeView === 'trash' ? t('trash.searchPlaceholder') : t('home.searchAria')"
               />
               <!-- 尾部：打字时是清除按钮，最右端是**搜索引擎选择器**。
                    引擎选择器曾经被撤掉过（理由是"设置页已有同一份控件，是重复控件"）——
@@ -2054,12 +2120,17 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
           <div :key="viewSwitchKey" class="view-host">
             <!-- 回收站是**另一屏**，不是主区里的一块：与 ShiTab 的 既有约定 同一条取向 ——
                  切过去时它应当像"另一档"，而不是"列表下面多了一段"。 -->
-            <TrashPanel
-              v-if="activeView === 'trash'"
-              ref="trashPanel"
-              class="trash-view"
-              @changed="refreshTrashCount"
-            />
+            <div v-if="activeView === 'trash'" class="trash-host">
+              <!-- 回收站那一屏没有 .section-head，通知要另找落点 —— 否则在这里右键
+                   删掉一个文件夹，界面一句话都不说（既有约定 修订三）。 -->
+              <p v-if="notice" class="hint trash-host-notice">{{ notice }}</p>
+              <TrashPanel
+                ref="trashPanel"
+                class="trash-view"
+                :filter="searchText"
+                @changed="refreshTrashCount"
+              />
+            </div>
 
             <section v-else class="content" aria-labelledby="bookmarkHeading">
               <div class="section-head">
@@ -2324,7 +2395,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
       :target="menuRequest.target"
       :x="menuRequest.x"
       :y="menuRequest.y"
-      :edit-enabled="editEnabled"
+      :edit-enabled="menuEditEnabled"
       :recovery="recoveryMode"
       :incognito-ready="incognitoReady"
       :split-ready="splitReady"

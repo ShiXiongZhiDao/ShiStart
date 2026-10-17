@@ -32,21 +32,9 @@ export async function readBookmarkSnapshot(): Promise<BookmarkTreeSnapshot> {
 }
 
 /**
- * 删除一个书签节点。
- *
- * 刻意**不发明一套自己的删除语义**：这就是调用浏览器 API 把节点删掉，
- * 和用户在书签管理器里按删除键**完全等价**。同步侧照常在下一轮对账时发现"本地少了这个节点"，
- * 照常生成删除操作、照常传播、照常留下墓碑进回收站（见 既有约定）。
- *
- * 反过来做的代价我们已经付过一次：只改本机状态而不写进操作日志，下一轮同步重放日志
- * 就把它变回来 —— 那是静默失败（既有约定 的来由）。
+ * 删除书签的写通道在 `bookmark-delete.ts`（删 + 按需要记本机墓碑，既有约定）；
+ * 删文件夹的在 `bookmark-folder-delete.ts`。这个文件只留读取与变更订阅。
  */
-export async function removeBookmarkNode(nativeId: string): Promise<void> {
-  if (!isBookmarksApiAvailable()) {
-    throw new BookmarksUnavailableError();
-  }
-  await chrome.bookmarks.remove(nativeId);
-}
 
 const BOOKMARK_CHANGE_EVENTS = [
   'onCreated',

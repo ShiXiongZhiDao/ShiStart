@@ -35,6 +35,7 @@ import {
   type TrashView,
 } from '../services/trash';
 import { readMeta } from '../services/sync-store';
+import { isConfigured, loadSyncConfig } from '../services/sync-config';
 import { groupTrashItems, type TrashGroup } from '../lib/folder/delete-preview';
 import { fallbackLabel } from '../lib/bookmark-mapper';
 import { createFaviconUrl } from '../lib/favicon';
@@ -44,6 +45,15 @@ import { useI18n } from '../composables/useI18n';
 import type { MessageKey } from '../lib/i18n/zh-CN';
 
 const emit = defineEmits<{ changed: [] }>();
+
+/**
+ * 顶栏搜索框的关键词（App 传进来）。
+ *
+ * 搜索框过滤的是**当前这一屏**：浏览屏过滤书签树，这里过滤回收站的两档
+ * （标题或网址包含即命中，大小写不敏感）。早先一打字就被弹去浏览屏，
+ * 而回收站条目不在书签树里 ⇒ 回收站永远搜不到（2026-10-17 用户报）。
+ */
+const props = withDefaults(defineProps<{ filter?: string }>(), { filter: '' });
 
 const { t, tRich, resolvedLocale } = useI18n();
 
@@ -62,9 +72,34 @@ const purgeAllBusy = ref(false);
 /** 本机写入令牌（截断到 8 位，与墓碑里存的那段同宽），用来把"谁删的"收敛成本机/其他设备。 */
 const localWriterId = ref<string | null>(null);
 
+/**
+ * 配没配同步（既有约定 修订，2026-10-17）。**曾经配过又断开配置的用户**本地墓碑还在、
+ * 也能就地恢复，所以面板要在这种状态下照常工作 —— 但恢复/彻底清除的文案必须换一套：
+ * 没有任何东西被发出去，不能说"其它设备会照常合并"。
+ *
+ * 在 `refresh()` 里读而不是只在挂载时读：用户可能开着这个面板去设置页断开/连上同步，
+ * 而同步跑完的广播会让 App 调 `trashPanel.refresh()`。
+ */
+const syncConfigured = ref(false);
+
 const tombs = computed(() => view.value?.tombs ?? []);
 const pending = computed(() => view.value?.pending ?? []);
 const isEmpty = computed(() => tombs.value.length === 0 && pending.value.length === 0);
+
+/** 关键词（小写）；空串 = 不过滤。 */
+const needle = computed(() => props.filter.trim().toLowerCase());
+const filtering = computed(() => needle.value !== '');
+
+/** 标题或网址包含关键词就算命中。文件夹没网址，只看标题。 */
+function matchesFilter(item: TrashItem): boolean {
+  if (!filtering.value) return true;
+  return item.title.toLowerCase().includes(needle.value) || (item.url ?? '').toLowerCase().includes(needle.value);
+}
+
+const matchedTombs = computed(() => tombs.value.filter(matchesFilter));
+const matchedPending = computed(() => pending.value.filter(matchesFilter));
+/** 有东西、但都被关键词筛掉了 —— 要说"没有匹配"，不能说"还没有删除记录"。 */
+const noMatch = computed(() => !isEmpty.value && matchedTombs.value.length === 0 && matchedPending.value.length === 0);
 
 /** 删除时间新的在上，未知时间垫底（Array#sort 稳定，同时间保持读入序）。 */
 function byDeletedAtDesc(a: TrashItem, b: TrashItem): number {
@@ -74,9 +109,9 @@ function byDeletedAtDesc(a: TrashItem, b: TrashItem): number {
   return b.deletedAt - a.deletedAt;
 }
 
-const sortedTombs = computed(() => [...tombs.value].sort(byDeletedAtDesc));
+const sortedTombs = computed(() => [...matchedTombs.value].sort(byDeletedAtDesc));
 const groups = computed(() => groupTrashItems(sortedTombs.value));
-const pendingGroups = computed(() => groupTrashItems(pending.value));
+const pendingGroups = computed(() => groupTrashItems(matchedPending.value));
 
 /** 展开着的组（组根 syncId）。Set 整体替换，保持响应式。 */
 const expandedGroups = ref<ReadonlySet<string>>(new Set());
@@ -127,8 +162,8 @@ interface TrashSection {
 /** 两档各自成区、各自一张卡片网格；模板里只写一遍卡片。 */
 const sections = computed<TrashSection[]>(() => {
   const out: TrashSection[] = [];
-  if (pending.value.length > 0) out.push({ scope: 'pending', rows: pendingRows.value });
-  if (tombs.value.length > 0) out.push({ scope: 'trash', rows: rows.value });
+  if (matchedPending.value.length > 0) out.push({ scope: 'pending', rows: pendingRows.value });
+  if (matchedTombs.value.length > 0) out.push({ scope: 'trash', rows: rows.value });
   return out;
 });
 
@@ -260,21 +295,24 @@ function pendingRestoreNote(preview: RestorePreview): string {
 }
 
 function purgeNote(preview: PurgePreview): string {
-  return t('trash.purgeNote', {
+  const parts = {
     n: preview.targetCount,
     extraPart: '',
     orphanPart: preview.livingDescendants > 0 ? t('trash.purgeNote.orphan', { n: preview.livingDescendants }) : '',
-  });
+  };
+  return syncConfigured.value
+    ? t('trash.purgeNote', parts)
+    : t('trash.purgeNoteOffline', parts);
 }
 
 function purgeAllNote(preview: { targetCount: number; livingDescendants: number }): string {
-  return t('trash.purgeAllNote', {
-    n: preview.targetCount,
-    orphanPart:
-      preview.livingDescendants > 0
-        ? t('trash.purgeAllNote.orphan', { records: tombs.value.length, n: preview.livingDescendants })
-        : '',
-  });
+  const orphanPart =
+    preview.livingDescendants > 0
+      ? t('trash.purgeAllNote.orphan', { records: tombs.value.length, n: preview.livingDescendants })
+      : '';
+  return syncConfigured.value
+    ? t('trash.purgeAllNote', { n: preview.targetCount, orphanPart })
+    : t('trash.purgeAllNoteOffline', { n: preview.targetCount, orphanPart });
 }
 
 /**
@@ -282,8 +320,17 @@ function purgeAllNote(preview: { targetCount: number; livingDescendants: number 
  *
  * 失败不能只吞掉：读不到时如果显示成"一条都没有"，用户会以为东西真没了——
  * 那是把"读不到"伪装成"不存在"。
+ *
+ * 顺手重读"配没配同步"：面板可能在用户去设置页动过配置之后还开着，
+ * 而同步跑完的广播会把这里再刷一次（App 的 onAfterSync）。
  */
 async function refresh(): Promise<void> {
+  try {
+    syncConfigured.value = isConfigured(await loadSyncConfig());
+  } catch {
+    // 读不出来按没配 —— 恢复/清除会走本机那条路，最坏只是多一行"未开启同步"的说明。
+    syncConfigured.value = false;
+  }
   try {
     const next = await readTrashView();
     view.value = next;
@@ -321,7 +368,9 @@ async function handleRestore(syncId: string): Promise<void> {
   busy.value = syncId;
   try {
     await restoreFromTrash([syncId]);
-    notice.value = t('trash.notice.restoreDone', { n: preview.targetCount });
+    notice.value = syncConfigured.value
+      ? t('trash.notice.restoreDone', { n: preview.targetCount })
+      : t('trash.notice.restoreDoneOffline', { n: preview.targetCount });
     await refresh();
     emit('changed');
   } catch (error) {
@@ -365,7 +414,9 @@ async function handlePurgeItem(syncId: string): Promise<void> {
   busy.value = syncId;
   try {
     await purgeFromTrash([syncId]);
-    notice.value = t('trash.notice.purgeDone', { n: preview.targetCount });
+    notice.value = syncConfigured.value
+      ? t('trash.notice.purgeDone', { n: preview.targetCount })
+      : t('trash.notice.purgeDoneOffline', { n: preview.targetCount });
     await refresh();
     emit('changed');
   } catch (error) {
@@ -385,7 +436,9 @@ async function handlePurgeAll(): Promise<void> {
   purgeAllBusy.value = true;
   try {
     const result = await purgeAllFromTrash();
-    notice.value = t('trash.notice.purgeAllDone', { n: result.purged });
+    notice.value = syncConfigured.value
+      ? t('trash.notice.purgeAllDone', { n: result.purged })
+      : t('trash.notice.purgeDoneOffline', { n: result.purged });
     await refresh();
     emit('changed');
   } catch (error) {
@@ -442,6 +495,10 @@ defineExpose({ refresh });
     <p v-if="notice" class="trash-note">{{ notice }}</p>
     <p v-if="loadError" class="trash-error">{{ loadError }}</p>
 
+    <!-- 断开同步配置时的一行口径（既有约定 修订）：入口对这种用户照样显示，
+         但恢复与彻底清除的传播规则和在线时不同 —— 在看任何操作之前先说清。 -->
+    <p v-if="!syncConfigured && !isEmpty && !noMatch" class="trash-hint" v-html="tRich('trash.offlineNote')"></p>
+
     <!-- 待同步：零等待可见，而且**可以就地恢复**—— 删除还没离开这台机器。
          整棵子树也给恢复（既有约定 修订）：先创建后换映射，syncId 原样保留、
          一个操作都不推；断网时这是唯一一条恢复路径。 -->
@@ -449,8 +506,8 @@ defineExpose({ refresh });
       <h3 class="trash-section-title">
         {{
           section.scope === 'pending'
-            ? t('trash.pendingTitle', { n: pending.length })
-            : t('trash.tombsTitle', { n: tombs.length })
+            ? t('trash.pendingTitle', { n: matchedPending.length })
+            : t('trash.tombsTitle', { n: matchedTombs.length })
         }}
       </h3>
       <p v-if="section.scope === 'pending'" class="trash-hint" v-html="tRich('trash.pendingNote')"></p>
@@ -559,6 +616,10 @@ defineExpose({ refresh });
     <template v-if="isEmpty">
       <p class="trash-empty">{{ t('trash.empty') }}</p>
       <p class="trash-empty trash-empty-hint">{{ t('trash.toSnapshots') }}</p>
+    </template>
+    <!-- 有东西、但都被关键词筛掉了：说"没有匹配"，不能说"还没有删除记录" —— 后者是假话。 -->
+    <template v-else-if="noMatch">
+      <p class="trash-empty">{{ t('trash.noMatch') }}</p>
     </template>
 
     <!-- 大段说明是参考材料不是操作信息：默认折叠，点开才读（既有约定 决策五）。 -->
