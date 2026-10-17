@@ -95,6 +95,10 @@ function toggleRecentPanel(event: Event): void {
         <input type="checkbox" :checked="settings.dragToArrange" @change="toggleDrag" />
         <span>{{ t('general.drag.toggle') }}</span>
       </label>
+      <details class="fold">
+        <summary>{{ t('common.expand') }}</summary>
+        <p class="hint" v-html="tRich('general.drag.detail')"></p>
+      </details>
     </section>
 
     <!-- 新建与重命名：默认开。与拖拽整理**分开两个开关** ——
@@ -106,6 +110,10 @@ function toggleRecentPanel(event: Event): void {
         <input type="checkbox" :checked="settings.editBookmarks" @change="toggleEdit" />
         <span>{{ t('general.editBookmarks.toggle') }}</span>
       </label>
+      <details class="fold">
+        <summary>{{ t('common.expand') }}</summary>
+        <p class="hint" v-html="tRich('general.editBookmarks.detail')"></p>
+      </details>
     </section>
 
     <!-- 右缘「最近访问」：默认开。它读浏览器浏览历史来显示，
@@ -117,6 +125,10 @@ function toggleRecentPanel(event: Event): void {
         <input type="checkbox" :checked="settings.recentPanel" @change="toggleRecentPanel" />
         <span>{{ t('general.recentPanel.toggle') }}</span>
       </label>
+      <details class="fold">
+        <summary>{{ t('common.expand') }}</summary>
+        <p class="hint" v-html="t('general.recentPanel.detail')"></p>
+      </details>
     </section>
 
     <section class="card">

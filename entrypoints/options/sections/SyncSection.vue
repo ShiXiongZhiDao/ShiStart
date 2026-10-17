@@ -693,7 +693,7 @@ function openSnapshots(): void {
             spellcheck="false"
           />
         </label>
-        <p class="hint">{{ t('sync.server.remotePath.hint') }}</p>
+        <p class="hint">{{ t('sync.server.remotePath.detail') }}</p>
       </details>
 
       <p
@@ -708,7 +708,7 @@ function openSnapshots(): void {
         <h3>{{ t('sync.scope.title') }}</h3>
         <span v-if="scopeSummary !== ''" class="fold-sum">{{ scopeSummary }}</span>
       </summary>
-      <p class="hint">{{ t('sync.scope.hint') }}</p>
+      <p class="hint">{{ t('sync.scope.detail') }}</p>
       <div class="checks">
         <label v-for="option in rootOptions" :key="option.id" class="check">
           <input
@@ -747,6 +747,10 @@ function openSnapshots(): void {
         </button>
       </div>
       <p class="hint" v-html="tRich('sync.connection.hint')"></p>
+      <details class="fold">
+        <summary>{{ t('common.expand') }}</summary>
+        <p class="hint" v-html="tRich('sync.connection.detail')"></p>
+      </details>
     </section>
 
     <details v-if="configured" class="card card-fold">
@@ -762,7 +766,7 @@ function openSnapshots(): void {
         />
         <span>{{ t('sync.auto.toggle') }}</span>
       </label>
-      <p class="hint">{{ t('sync.auto.hint') }}</p>
+      <p class="hint">{{ t('sync.auto.detail') }}</p>
       <label class="field">
         <span class="field-label">{{ t('sync.auto.interval') }}</span>
         <select :value="config?.intervalMinutes" @change="handleInterval">
@@ -787,7 +791,7 @@ function openSnapshots(): void {
         />
         <span>{{ t('sync.pref.toggle') }}</span>
       </label>
-      <p class="hint">{{ t('sync.pref.hint') }}</p>
+      <p class="hint">{{ t('sync.pref.detail') }}</p>
       <!-- 「明列上传哪些字段」是决策七的硬要求：不留下"不知道它传了什么"的状态。
            默认折叠之后这条靠摘要行（「会上传这 12 项」）+ 这一行共同承担。 -->
       <p class="hint pref-fields">
@@ -957,6 +961,10 @@ function openSnapshots(): void {
         </button>
       </div>
       <p class="hint">{{ t('sync.danger.hint') }}</p>
+      <details class="fold">
+        <summary>{{ t('common.expand') }}</summary>
+        <p class="hint" v-html="t('sync.danger.detail')"></p>
+      </details>
       <p class="hint" v-html="tRich('sync.danger.resetHint')"></p>
     </section>
   </div>

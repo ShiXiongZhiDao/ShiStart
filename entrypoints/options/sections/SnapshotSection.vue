@@ -65,7 +65,7 @@ const localError = ref<string | null>(null);
 /** 配过同步没有。没配时"没写过"要说成"还没配置"，不是"还没有写入过"。 */
 const configured = ref(false);
 
-/** 两下点击才真删：删除是这条链路上唯一不可逆的动作（共享的，见 snapshot.note）。 */
+/** 两下点击才真删：删除是这条链路上唯一不可逆的动作（共享的，见 snapshot.detail）。 */
 const pendingDeleteId = ref<string | null>(null);
 /** 行内预览：正在算账的那一份、算账结果、算账失败。 */
 const previewId = ref<string | null>(null);
@@ -506,7 +506,7 @@ async function handleDelete(id: string): Promise<void> {
         <details class="fold">
           <summary>{{ t('snapshot.fold') }}</summary>
           <p class="hint" v-html="tRich('snapshot.retention')"></p>
-          <p class="hint" v-html="tRich('snapshot.note')"></p>
+          <p class="hint" v-html="tRich('snapshot.detail')"></p>
         </details>
         <p class="foot-hint">{{ t('snapshot.trashHint') }}</p>
       </div>

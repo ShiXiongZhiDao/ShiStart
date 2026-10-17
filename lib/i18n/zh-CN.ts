@@ -35,12 +35,10 @@ export const zhCN = {
 
   'general.title': '通用',
   'general.searchEngine': '搜索引擎',
-  'general.searchEngine.hint':
-    '只在搜索框里按下回车时用这个引擎打开网页。输入过程中不会向任何服务发送关键词。',
+  'general.searchEngine.hint': '搜索框回车时用它打开；输入过程不外发。',
   'general.sidebar': '侧边栏',
   'general.sidebar.show': '显示侧边栏',
-  'general.sidebar.hint':
-    '收起后，把鼠标移到页面左缘（或按 [ 键）可临时展开侧边栏，触屏点左缘的把手。侧边栏右边缘可以拖动调宽，双击恢复默认。',
+  'general.sidebar.hint': '鼠标移到左缘（或按 [）临时展开，可拖宽。',
   'general.sidebar.resetWidth': '恢复默认宽度',
   'general.shortcuts': '快捷键',
   'general.shortcuts.focus': 'Ctrl / Cmd + K 或 /：聚焦搜索框',
@@ -49,72 +47,59 @@ export const zhCN = {
   'general.shortcuts.recent': ']：展开 / 收起最近访问面板',
   'general.drag': '拖拽整理',
   'general.drag.toggle': '允许拖拽整理书签',
-  'general.drag.hint':
-    '打开后可以直接拖动书签与文件夹改变顺序，或拖进另一个文件夹改变归属 —— 松手即生效，没有二次确认。' +
-    '上一次移动会留一个「撤销」，直到下一次移动为止。' +
-    '拖拽用的是浏览器的原生拖放，<strong>触屏与键盘不支持</strong>，请用浏览器书签管理器。',
+  'general.drag.hint': '拖动书签或文件夹改顺序与归属，松手即生效。',
+  'general.drag.detail': '打开后可以直接拖动书签与文件夹改变顺序，或拖进另一个文件夹改变归属 —— 松手即生效，没有二次确认。上一次移动会留一个「撤销」，直到下一次移动为止。拖拽用的是浏览器的原生拖放，<strong>触屏与键盘不支持</strong>，请用浏览器书签管理器。',
   'general.editBookmarks': '新建与重命名',
   'general.editBookmarks.toggle': '允许在主页新建书签、新建文件夹与重命名',
-  'general.editBookmarks.hint':
-    '打开后，标题行右侧有一个固定的「＋新建」，鼠标移到书签网格末尾也会浮出一张新建卡；' +
-    '右键文件夹还能在它里面新建、或重命名它自己。<br />' +
-    '每一次改动都会记下「上一次改动」，内容区上方的撤销条随时可以反悔，直到下一次改动把它顶掉。' +
-    '删除书签的入口本来就在右键菜单里，不受这个开关影响。',
+  'general.editBookmarks.hint': '开启新建与重命名入口，改动可在撤销条里反悔。',
+  'general.editBookmarks.detail': '打开后，标题行右侧有一个固定的「＋新建」，鼠标移到书签网格末尾也会浮出一张新建卡；右键文件夹还能在它里面新建、或重命名它自己。<br />每一次改动都会记下「上一次改动」，内容区上方的撤销条随时可以反悔，直到下一次改动把它顶掉。删除书签的入口本来就在右键菜单里，不受这个开关影响。',
   'general.recentPanel': '最近访问',
   'general.recentPanel.toggle': '在主页右缘显示最近访问面板',
-  'general.recentPanel.hint':
-    '鼠标移到页面右缘（或按 ] 键）可浮出最近访问过的网页，点一下就在新标签页打开。' +
-    '它读的是浏览器自己的浏览历史 —— 不另存副本、不上传；跟着同步空间走的只有这个开关本身。' +
-    '窗口宽度 900px 以下不显示。',
+  'general.recentPanel.hint': '鼠标移到页面右缘（或按 ]）浮出最近访问。',
+  'general.recentPanel.detail': '鼠标移到页面右缘（或按 ] 键）可浮出最近访问过的网页，点一下就在新标签页打开。它读的是浏览器自己的浏览历史 —— 不另存副本、不上传；跟着同步空间走的只有这个开关本身。窗口宽度 900px 以下不显示。',
 
   'appearance.title': '外观',
   'appearance.palette': '配色',
-  'appearance.palette.hint': '两套配色各自有浅色与深色两种呈现 —— 配什么色、多亮，是两件事。',
+  'appearance.palette.hint': '两套配色，各有浅色与深色。',
   'appearance.palette.warm': '暖陶晨光',
   'appearance.palette.youth': '青柠夏夜',
   'appearance.mode': '明暗',
-  'appearance.mode.hint': '「跟随系统」随操作系统的深浅色设置自动切换，对两套配色都生效。',
+  'appearance.mode.hint': '「跟随系统」随操作系统的深浅色切换。',
   'appearance.mode.light': '浅色',
   'appearance.mode.dark': '深色',
   'appearance.mode.system': '跟随系统',
   'appearance.pattern': '背景图案',
-  'appearance.pattern.hint': '铺在新标签页底色上的纸纹，与右上角那层暖光叠加；颜色跟着配方主色，强度按明暗定死。侧边栏与设置页不铺。',
+  'appearance.pattern.hint': '新标签页的纸纹底，颜色跟随主色。',
   'appearance.pattern.none': '无',
   'appearance.pattern.dots': '点阵纸',
   'appearance.pattern.checker': '方格纸',
   'appearance.pattern.grid': '细网格',
   'appearance.language': '语言',
-  'appearance.language.hint':
-    '「跟随浏览器」按浏览器界面的语言自动选择。目前只有简体中文与 English 两档。',
+  'appearance.language.hint': '「跟随浏览器」按界面语言自动选择。',
   'appearance.language.zh': '简体中文',
   'appearance.language.en': 'English',
   'appearance.language.system': '跟随浏览器',
   // ---- 每行卡片数（既有约定，本地偏好不上云）----
   'appearance.cardsPerRow': '每行卡片数',
-  'appearance.cardsPerRow.hint':
-    '书签卡片与文件夹瓦片每行最多放几个。窗口不够宽时会自动减少列数，让卡片不至于窄到读不了 —— ' +
-    '所以这是个上限，不是固定值，下面那行会告诉你现在的窗口实际能排几列。' +
-    '改完回到书签主页就能看到效果。',
+  'appearance.cardsPerRow.hint': '每行最多几张卡片，窗口窄时会自动减少。',
+  'appearance.cardsPerRow.detail': '书签卡片与文件夹瓦片每行最多放几个。窗口不够宽时会自动减少列数，让卡片不至于窄到读不了 —— 所以这是个上限，不是固定值，下面那行会告诉你现在的窗口实际能排几列。改完回到书签主页就能看到效果。',
   'appearance.cardsPerRow.value': '每行 {n} 个',
   'appearance.cardsPerRow.actual': '当前窗口下实际每行 {n} 个',
   'appearance.cardsPerRow.capped': '（窗口不够宽，再挤卡片就太窄了）',
 
   'data.title': '数据',
   'data.export': '导出书签',
-  'data.export.hint':
-    '导出的内容直接来自浏览器书签，师兄起页不保存任何副本。这一步是只读的，不会改动你的书签。',
+  'data.export.hint': '直接导出浏览器书签，只读，不改动任何内容。',
   'data.export.html': '导出为 HTML',
-  'data.export.html.hint': '浏览器通用的书签文件格式，Chrome / Edge / Firefox 都能直接导入。',
+  'data.export.html.hint': '所有浏览器都能导入的通用格式。',
   'data.export.json': '导出为 JSON',
   'data.export.json.hint': '带目录层级与时间的完整结构，适合自己处理或留档。',
   'data.export.busy': '正在导出…',
   'data.export.failed': '导出失败：{reason}',
   'data.import': '导入',
-  'data.import.hint':
-    '师兄起页不导入书签 —— 导入请用浏览器自带的书签管理器（Ctrl+Shift+O）里的「导入书签」。',
+  'data.import.hint': '请用浏览器书签管理器导入（Ctrl+Shift+O）。',
   'data.settings': '设置备份',
-  'data.settings.hint':
-    '只含界面偏好（主题、语言、搜索引擎、侧边栏），不含任何书签、密码或同步凭据。',
+  'data.settings.hint': '只含界面偏好，不含书签、密码或同步凭据。',
   'data.settings.export': '导出设置',
   'data.settings.import': '导入设置',
   'data.settings.importDone': '设置已导入，正在重新加载。',
@@ -149,8 +134,7 @@ export const zhCN = {
   'about.changelog.empty': '暂时读不到更新记录。',
   // ---- 赞助二维码 + 公众号（既有约定：GitHub / Gitee 双镜像，自动选最快的）----
   'about.sponsor': '赞助作者',
-  'about.sponsor.hint':
-    '如果这个扩展帮到了你，可以请作者喝杯咖啡。金额随意 —— 不打赏任何功能都不受影响。',
+  'about.sponsor.hint': '喜欢的话可以请作者喝杯咖啡，不影响功能。',
   'about.sponsor.alipay': '支付宝',
   'about.sponsor.wechatPay': '微信支付',
   'about.sponsor.loading': '正在选择最快的图片源…',
@@ -165,7 +149,7 @@ export const zhCN = {
   'about.official.body':
     '新版本、用法和新功能会首发在公众号「师兄知道」。扫一扫，或在微信里搜这个名字。',
   'about.reset.done': '已恢复默认设置。',
-  'about.reset.hint': '只重置界面偏好，不影响浏览器书签，也不影响同步配置与同步状态。',
+  'about.reset.hint': '只重置界面偏好，不影响书签与同步配置。',
 
   'home.title': '所在位置',
   // 时段问候 既有约定 加、既有约定 按用户要求移除（连同日期与这组 key）。
@@ -360,9 +344,7 @@ export const zhCN = {
   'sync.phase.auth': '凭据有问题',
   'sync.phase.error': '上次同步失败',
   'sync.server.title': 'WebDAV 服务器',
-  'sync.server.hint':
-    '同步是可选的。不配置时师兄起页仍然只是读取本机书签，行为完全不变。' +
-    '开启后本扩展会<strong>增删改你的浏览器书签</strong>，请确认后再启用。',
+  'sync.server.hint': '不配置也能正常用；开启后会改写你的书签。',
   'sync.server.baseUrl': '服务器地址',
   'sync.server.username': '用户名',
   'sync.server.password': '应用密码',
@@ -371,7 +353,7 @@ export const zhCN = {
   'sync.server.remotePath.placeholder': '留空则用默认子目录（{path}）',
   // 换子目录 = 换一个同步位置：新位置没有空间时会**用同一个空间身份**在那里重建，
   // 旧位置的文件留在原处不动。这行必须说清，否则用户会以为数据跟着搬。
-  'sync.server.remotePath.hint': '换一个子目录等于换一个同步位置：原来位置上的文件不会被搬过去。',
+  'sync.server.remotePath.detail': '换一个子目录等于换一个同步位置：原来位置上的文件不会被搬过去。',
   // 服务器卡里那截"配完就不用再碰"的部分。远端子目录有默认值了，
   // 不该和地址、账号、密码一起挤在首屏。
   'sync.server.more': '更多设置',
@@ -379,7 +361,7 @@ export const zhCN = {
     '同步空间：<code>{id}</code> —— 同一个远端目录上的所有设备都应该是这一串。' +
     '两台设备显示的不一样，说明它们连到了不同的空间。',
   'sync.scope.title': '同步范围',
-  'sync.scope.hint': '只同步勾选的根下面的书签。根级散落的书签（师兄起页里显示为「未归类」）不参与同步。',
+  'sync.scope.detail': '只同步勾选的根下面的书签。根级散落的书签（师兄起页里显示为「未归类」）不参与同步。',
   // ---- 折叠卡片的摘要行----
   // 折叠的是明细，不是信息：这几张卡默认收起，摘要行必须一个人就把"现在什么状态"
   // 说完 —— 尤其偏好那一条，既有约定 决策七要求不留下"不知道它传了什么"的状态。
@@ -393,14 +375,11 @@ export const zhCN = {
   'sync.connection.settingUp': '连接中…',
   'sync.connection.sync': '立即同步',
   'sync.connection.syncing': '同步中…',
-  'sync.connection.hint':
-    '「连接并同步」一次做完三件事：测试连通性 → 创建同步空间 → 首次同步。' +
-    '如果这个地址上已经有别的浏览器建好的同步空间，会直接<strong>加入</strong>它，两台设备共用一份数据。<br />' +
-    '连接测试只写一个临时文件再删掉；密码保存在本机扩展存储里，不会写进任何上传文件；' +
-    '扩展的本地存储不等价于系统密钥库，请勿在不信任的设备上配置。',
+  'sync.connection.hint': '一次完成：测试连通 → 建同步空间 → 首次同步。',
+  'sync.connection.detail': '「连接并同步」一次做完三件事：测试连通性 → 创建同步空间 → 首次同步。如果这个地址上已经有别的浏览器建好的同步空间，会直接<strong>加入</strong>它，两台设备共用一份数据。<br />连接测试只写一个临时文件再删掉；密码保存在本机扩展存储里，不会写进任何上传文件；扩展的本地存储不等价于系统密钥库，请勿在不信任的设备上配置。',
   'sync.auto.title': '自动同步',
   'sync.auto.toggle': '书签变化后与定时自动同步',
-  'sync.auto.hint':
+  'sync.auto.detail':
     '关掉后只有在设置页点「立即同步」才会同步。两件事共用一个开关：' +
     '本机书签变动后约 30 秒同步一次；以及下面这个间隔的定时同步，用来接住其他设备推上来的改动。',
   'sync.auto.interval': '间隔',
@@ -411,7 +390,7 @@ export const zhCN = {
   // ---- 界面偏好同步----
   'sync.pref.title': '界面偏好',
   'sync.pref.toggle': '把界面偏好也同步到别的浏览器',
-  'sync.pref.hint':
+  'sync.pref.detail':
     '开启后，下面这些偏好会随书签一起上传到你填写的 WebDAV 服务器，' +
     '并在每一台装了师兄起页的浏览器上生效。关掉则本机偏好不再收发，只留在这台机器上。' +
     '同步地址与密码仍然只留在本机 —— 它们本来就不上云。',
@@ -439,9 +418,7 @@ export const zhCN = {
   'sync.status.gates': '待决定的删除',
   'sync.status.conflictsValue': '{n} 个',
   'sync.gates.title': '需要你决定的删除',
-  'sync.gates.hint':
-    '一台设备删除、另一台同时编辑了同一个书签时，同步<strong>不自动选边</strong>——' +
-    '删除是唯一不可逆的操作，留给你决定。选一个，决定会随下次同步传到所有设备。',
+  'sync.gates.hint': '两边同时改动时由你选；删除不自动选边。',
   'sync.gates.empty': '没有需要决定的删除。',
   'sync.gates.keep': '保留（编辑生效）',
   'sync.gates.delete': '确认删除',
@@ -452,9 +429,7 @@ export const zhCN = {
   'sync.gates.field.position': '顺序',
   'sync.gates.field.logicalRootId': '逻辑根',
   'sync.overrides.title': '同步覆盖的记录',
-  'sync.overrides.hint':
-    '两台设备同时改了同一个书签的同一个字段时，同步按确定性规则选一个生效，' +
-    '被盖掉的值记在这里，<strong>可以一键撤销</strong>（把你的值作为一次新改动推上去）。',
+  'sync.overrides.hint': '被覆盖的字段记在这里，可一键撤销。',
   'sync.overrides.empty': '没有被盖掉的改动。',
   'sync.overrides.undo': '撤销（改回我的值）',
   'sync.overrides.field.title': '标题',
@@ -464,13 +439,10 @@ export const zhCN = {
   'sync.overrides.field.logicalRootId': '逻辑根',
   'sync.events.title': '同步记录',
   'sync.events.empty': '还没有同步记录。',
-  'sync.events.note':
-    '本机保留的最近 100 次同步结果。这些记录<strong>只存在这台设备上</strong>，' +
-    '不会上传，也不参与任何同步判断。',
+  'sync.events.note': '本机最近 100 次同步结果，不上传。',
   // ---- 快照（既有约定 修订 / 既有约定：恢复点的界面名；数据层仍叫恢复点）----
   'snapshot.title': '快照',
-  'snapshot.lead':
-    '每次同步成功后，当时那份完整书签会自动存一份快照到云端。误删之后，可以把整棵树退回到任何一份快照 —— 包括那一刻之后被删掉的内容。',
+  'snapshot.lead': '每次同步成功都存一份完整快照，可整棵回退。',
   'snapshot.status.title': '保险状态',
   'snapshot.status.lastWrite': '上次写入',
   'snapshot.status.count': '云端份数',
@@ -499,7 +471,7 @@ export const zhCN = {
   'snapshot.empty.action': '去配置同步',
   'snapshot.trashHint': '只想找回一两条书签？去书签主页侧边栏底部的「回收站」。',
   'snapshot.fold': '关于快照与保留策略',
-  'snapshot.note':
+  'snapshot.detail':
     '快照存在你自己的 WebDAV 上，<strong>整个同步空间共用一份</strong>，不同内容各占一份。' +
     '「回退到这份快照」是<strong>前进式</strong>的：它只把差异生成成一批普通改动推上去' +
     '（不重写云端历史、不动同步进度），所以其它浏览器会把它当成一次普通编辑来合并，' +
@@ -532,9 +504,8 @@ export const zhCN = {
   'sync.danger.reset': '重置同步（含远端）',
   'sync.danger.resetting': '正在重置…',
   'sync.danger.resetConfirm': '再点一次确认重置',
-  'sync.danger.hint':
-    '断开同步只删除配置与密码，浏览器书签不受影响。清空本地同步状态会删除本机保存的 ' +
-    'ID 映射与日志，下次连接需要重新比对；同样不会删除或改动浏览器书签。',
+  'sync.danger.hint': '断开只删配置与密码，不动浏览器书签。',
+  'sync.danger.detail': '断开同步只删除配置与密码，浏览器书签不受影响。清空本地同步状态会删除本机保存的 ID 映射与日志，下次连接需要重新比对；同样不会删除或改动浏览器书签。',
   'sync.danger.resetHint':
     '<strong>重置同步</strong>会额外删除云端的全部同步历史，并让这台设备从头开始。' +
     '这个动作不可撤销，通常只在同步出现无法自动修复的错误（例如反复生成重复书签）时使用。' +

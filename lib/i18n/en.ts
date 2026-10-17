@@ -42,12 +42,10 @@ export const en: Record<MessageKey, string> = {
 
   'general.title': 'General',
   'general.searchEngine': 'Search engine',
-  'general.searchEngine.hint':
-    'Used only when you press Enter in the search box. Nothing is sent anywhere while you type.',
+  'general.searchEngine.hint': 'Used when you press Enter; typing is never sent anywhere.',
   'general.sidebar': 'Sidebar',
   'general.sidebar.show': 'Show the sidebar',
-  'general.sidebar.hint':
-    'When collapsed, move the pointer to the left edge of the page (or press [) to peek at the sidebar; on touch screens, tap the handle at the left edge. Drag the right edge of the sidebar to resize it, or double-click it to restore the default width.',
+  'general.sidebar.hint': 'Move to the left edge (or press [) to peek; drag to resize.',
   'general.sidebar.resetWidth': 'Reset to default width',
   'general.shortcuts': 'Keyboard shortcuts',
   'general.shortcuts.focus': 'Ctrl / Cmd + K, or /: focus the search box',
@@ -56,77 +54,60 @@ export const en: Record<MessageKey, string> = {
   'general.shortcuts.recent': ']: show / collapse the recent visits panel',
   'general.drag': 'Drag to arrange',
   'general.drag.toggle': 'Allow dragging bookmarks to arrange them',
-  'general.drag.hint':
-    'When enabled you can drag a bookmark or folder to change its order, or drop it into another folder to move it there — it takes effect the moment you let go, with no confirmation step. ' +
-    'The most recent move keeps an <strong>Undo</strong> until the next one. ' +
-    'Dragging uses the browser\u2019s native drag and drop, which does <strong>not work on touch screens or with the keyboard</strong> — use the browser bookmark manager for that.',
+  'general.drag.hint': 'Drag bookmarks or folders to reorder or reparent; applies on drop.',
+  'general.drag.detail': 'When enabled you can drag a bookmark or folder to change its order, or drop it into another folder to move it there — it takes effect the moment you let go, with no confirmation step. The most recent move keeps an <strong>Undo</strong> until the next one. Dragging uses the browser\u2019s native drag and drop, which does <strong>not work on touch screens or with the keyboard</strong> — use the browser bookmark manager for that.',
   'general.editBookmarks': 'Create & rename',
   'general.editBookmarks.toggle': 'Allow creating bookmarks, creating folders and renaming on the home page',
-  'general.editBookmarks.hint':
-    'When enabled, a fixed “+ New” button sits next to the title, and moving the pointer to the end of the bookmark grid reveals a new-item card; ' +
-    'right-clicking a folder also lets you create inside it, or rename the folder itself.<br />' +
-    'Every change records a “last change” that the undo bar above the content can take back, until the next change replaces it. ' +
-    'The delete entry for bookmarks lives in the right-click menu either way and is not affected by this switch.',
+  'general.editBookmarks.hint': 'Enables create and rename entry points; undo bar can revert.',
+  'general.editBookmarks.detail': 'When enabled, a fixed “+ New” button sits next to the title, and moving the pointer to the end of the bookmark grid reveals a new-item card; right-clicking a folder also lets you create inside it, or rename the folder itself.<br />Every change records a “last change” that the undo bar above the content can take back, until the next change replaces it. The delete entry for bookmarks lives in the right-click menu either way and is not affected by this switch.',
   'general.recentPanel': 'Recent visits',
   'general.recentPanel.toggle': 'Show the recent visits panel at the right edge of the home page',
-  'general.recentPanel.hint':
-    'Move the pointer to the right edge of the page (or press ]) to peek at the pages you visited recently; click one to open it in a new tab. ' +
-    'It reads your browser’s own history — no copy is kept and nothing is uploaded; only this switch itself travels with sync. ' +
-    'Not shown when the window is narrower than 900px.',
+  'general.recentPanel.hint': 'Move the cursor to the right edge (or press ]) for recent visits.',
+  'general.recentPanel.detail': 'Move the pointer to the right edge of the page (or press ]) to peek at the pages you visited recently; click one to open it in a new tab. It reads your browser’s own history — no copy is kept and nothing is uploaded; only this switch itself travels with sync. Not shown when the window is narrower than 900px.',
 
   'appearance.title': 'Appearance',
   'appearance.palette': 'Palette',
-  'appearance.palette.hint':
-    'Each palette comes in light and dark — which colors and how bright are two separate choices.',
+  'appearance.palette.hint': 'Two palettes, each in light and dark.',
   'appearance.palette.warm': 'Warm clay morning',
   'appearance.palette.youth': 'Lime summer night',
   'appearance.mode': 'Appearance',
-  'appearance.mode.hint': '"Follow system" switches with your operating system, for either palette.',
+  'appearance.mode.hint': '"Follow system" tracks the OS light/dark setting.',
   'appearance.mode.light': 'Light',
   'appearance.mode.dark': 'Dark',
   'appearance.mode.system': 'Follow system',
   'appearance.pattern': 'Background pattern',
-  'appearance.pattern.hint':
-    'A paper texture on the new tab background, layered under the warm glow. Color follows the palette; strength is fixed per light/dark. The sidebar and settings page stay clean.',
+  'appearance.pattern.hint': 'Paper texture on the new tab; follows the accent color.',
   'appearance.pattern.none': 'None',
   'appearance.pattern.dots': 'Dot grid',
   'appearance.pattern.checker': 'Checkerboard',
   'appearance.pattern.grid': 'Fine grid',
   'appearance.language': 'Language',
-  'appearance.language.hint':
-    '"Follow browser" picks the language from your browser interface. Only Simplified Chinese and English are available.',
+  'appearance.language.hint': '"Follow browser" picks the interface language automatically.',
   // 语言名保留各自的自称：让用户认得出，是唯一正确的做法。
   'appearance.language.zh': '简体中文',
   'appearance.language.en': 'English',
   'appearance.language.system': 'Follow browser',
   // ---- Cards per row (既有约定; local preference, never synced) ----
   'appearance.cardsPerRow': 'Cards per row',
-  'appearance.cardsPerRow.hint':
-    'At most how many bookmark cards and folder tiles fit in one row. Narrow windows drop ' +
-    'columns automatically so cards never get too narrow to read — this is a ceiling, not ' +
-    'a fixed count, and the line below tells you what your current window actually fits. ' +
-    'Go back to the start page to see it.',
+  'appearance.cardsPerRow.hint': 'Max cards per row; fewer when the window is narrow.',
+  'appearance.cardsPerRow.detail': 'At most how many bookmark cards and folder tiles fit in one row. Narrow windows drop columns automatically so cards never get too narrow to read — this is a ceiling, not a fixed count, and the line below tells you what your current window actually fits. Go back to the start page to see it.',
   'appearance.cardsPerRow.value': '{n} per row',
   'appearance.cardsPerRow.actual': 'Your current window actually fits {n} per row',
   'appearance.cardsPerRow.capped': '(the window is not wide enough — cards would get too narrow)',
 
   'data.title': 'Data',
   'data.export': 'Export bookmarks',
-  'data.export.hint':
-    'Exported content comes straight from your browser bookmarks; ShiStart keeps no copy of its own. This is read-only and never modifies your bookmarks.',
+  'data.export.hint': 'Exports browser bookmarks directly; read-only, changes nothing.',
   'data.export.html': 'Export as HTML',
-  'data.export.html.hint':
-    'The bookmark file format every browser understands — Chrome, Edge and Firefox can import it directly.',
+  'data.export.html.hint': 'Universal format that any browser can import.',
   'data.export.json': 'Export as JSON',
   'data.export.json.hint': 'Full structure with folder hierarchy and timestamps, for archival or your own tooling.',
   'data.export.busy': 'Exporting…',
   'data.export.failed': 'Export failed: {reason}',
   'data.import': 'Import',
-  'data.import.hint':
-    'ShiStart does not import bookmarks — use “Import bookmarks” in the browser\u2019s own bookmark manager (Ctrl+Shift+O).',
+  'data.import.hint': 'Import via the browser bookmark manager (Ctrl+Shift+O).',
   'data.settings': 'Settings backup',
-  'data.settings.hint':
-    'Contains interface preferences only (theme, language, search engine, sidebar) — no bookmarks, passwords or sync credentials.',
+  'data.settings.hint': 'Interface preferences only; no bookmarks, passwords, or sync credentials.',
   'data.settings.export': 'Export settings',
   'data.settings.import': 'Import settings',
   'data.settings.importDone': 'Settings imported. Reloading.',
@@ -158,8 +139,7 @@ export const en: Record<MessageKey, string> = {
   'about.changelog.empty': 'Release notes are unavailable right now.',
   // ---- Sponsor QR codes + official account (既有约定: GitHub/Gitee mirrors, auto-pick) ----
   'about.sponsor': 'Sponsor the author',
-  'about.sponsor.hint':
-    'If this extension helped you, you can buy the author a coffee. Any amount — not tipping changes nothing about any feature.',
+  'about.sponsor.hint': 'Buy the author a coffee if you like it; features stay free.',
   'about.sponsor.alipay': 'Alipay',
   'about.sponsor.wechatPay': 'WeChat Pay',
   'about.sponsor.loading': 'Picking the fastest image source…',
@@ -176,8 +156,7 @@ export const en: Record<MessageKey, string> = {
   'about.reset': 'Reset all settings',
   'about.reset.confirm': 'Click again to confirm reset',
   'about.reset.done': 'Restored the default settings.',
-  'about.reset.hint':
-    'Resets interface preferences only. It does not touch your browser bookmarks, your sync configuration or your sync state.',
+  'about.reset.hint': 'Resets interface preferences only; bookmarks and sync stay intact.',
 
   'home.title': 'Current location',
   // Time-of-day greeting: added in 既有约定, removed in 既有约定 per user request.
@@ -384,9 +363,7 @@ export const en: Record<MessageKey, string> = {
   'sync.phase.auth': 'Credentials problem',
   'sync.phase.error': 'Last sync failed',
   'sync.server.title': 'WebDAV server',
-  'sync.server.hint':
-    'Sync is optional. Without it ShiStart still just reads your local bookmarks and behaves exactly the same. ' +
-    'Once enabled, this extension will <strong>add, modify and delete your browser bookmarks</strong> — confirm before you turn it on.',
+  'sync.server.hint': 'Works without it; once enabled it writes to your bookmarks.',
   'sync.server.baseUrl': 'Server address',
   'sync.server.username': 'Username',
   'sync.server.password': 'App password',
@@ -395,14 +372,14 @@ export const en: Record<MessageKey, string> = {
   'sync.server.remotePath.placeholder': 'Leave empty to use the default subfolder ({path})',
   // A different subfolder is a different sync location: the space is re-created there under
   // the same space id, and files at the old location stay where they are.
-  'sync.server.remotePath.hint': 'A different subfolder is a different sync location — existing files are not moved for you.',
+  'sync.server.remotePath.detail': 'A different subfolder is a different sync location — existing files are not moved for you.',
   // The part of the server card you configure once and never touch again .
   'sync.server.more': 'More settings',
   'sync.server.space':
     'Sync space: <code>{id}</code> — every device pointed at the same remote folder should show this same string. ' +
     'If two devices show different strings, they are connected to different spaces.',
   'sync.scope.title': 'Sync scope',
-  'sync.scope.hint':
+  'sync.scope.detail':
     'Only bookmarks under the checked roots are synced. Loose root-level bookmarks (shown as "Unfiled" in ShiStart) are excluded.',
   // ---- Summary lines of the collapsed cards  ----
   'sync.scope.summary': 'Syncing: {names}',
@@ -415,14 +392,11 @@ export const en: Record<MessageKey, string> = {
   'sync.connection.settingUp': 'Connecting…',
   'sync.connection.sync': 'Sync now',
   'sync.connection.syncing': 'Syncing…',
-  'sync.connection.hint':
-    '"Connect and sync" does three things in one go: test connectivity → create the sync space → run the first sync. ' +
-    'If another browser has already created a sync space at this address, this device will simply <strong>join</strong> it and share one dataset.<br />' +
-    'The connection test only writes a temporary file and deletes it. The password stays in this extension\u2019s local storage and is never written into an uploaded file; ' +
-    'extension storage is not a system keychain, so do not configure sync on a device you do not trust.',
+  'sync.connection.hint': 'One step: test, create the space, first sync.',
+  'sync.connection.detail': '"Connect and sync" does three things in one go: test connectivity → create the sync space → run the first sync. If another browser has already created a sync space at this address, this device will simply <strong>join</strong> it and share one dataset.<br />The connection test only writes a temporary file and deletes it. The password stays in this extension\u2019s local storage and is never written into an uploaded file; extension storage is not a system keychain, so do not configure sync on a device you do not trust.',
   'sync.auto.title': 'Automatic sync',
   'sync.auto.toggle': 'Sync automatically after bookmark changes and on a schedule',
-  'sync.auto.hint':
+  'sync.auto.detail':
     'Turned off, sync only runs when you click "Sync now" here. One switch covers two things: ' +
     'syncing about 30 seconds after a local bookmark changes, and the timed sync at the interval below, ' +
     'which picks up changes pushed by other devices.',
@@ -434,7 +408,7 @@ export const en: Record<MessageKey, string> = {
   // ---- Interface preference sync  ----
   'sync.pref.title': 'Interface preferences',
   'sync.pref.toggle': 'Sync my interface preferences to other browsers too',
-  'sync.pref.hint':
+  'sync.pref.detail':
     'When on, the preferences listed below travel with your bookmarks to the WebDAV server ' +
     'you entered, and take effect in every browser running ShiStart. Turn it off and this ' +
     'machine stops sending or receiving preferences. The server address and password stay ' +
@@ -465,9 +439,7 @@ export const en: Record<MessageKey, string> = {
   'sync.status.gates': 'Deletions to decide',
   'sync.status.conflictsValue': '{n} conflicts',
   'sync.gates.title': 'Deletions awaiting your decision',
-  'sync.gates.hint':
-    'When one device deletes a bookmark while another edits it at the same time, sync <strong>does not pick a side</strong> — ' +
-    'deletion is the only irreversible operation, so the call is yours. Your choice travels to every device on the next sync.',
+  'sync.gates.hint': 'You decide when both sides changed; deletes are never auto-resolved.',
   'sync.gates.empty': 'No deletions awaiting a decision.',
   'sync.gates.keep': 'Keep (edit wins)',
   'sync.gates.delete': 'Confirm delete',
@@ -478,9 +450,7 @@ export const en: Record<MessageKey, string> = {
   'sync.gates.field.position': 'order',
   'sync.gates.field.logicalRootId': 'root',
   'sync.overrides.title': 'Overridden by sync',
-  'sync.overrides.hint':
-    'When two devices change the same field of the same bookmark, sync picks one winner deterministically. ' +
-    'The overridden value is logged here and <strong>can be undone</strong> — your value is pushed back as a new change.',
+  'sync.overrides.hint': 'Overwritten fields are listed here; undo with one click.',
   'sync.overrides.empty': 'No overridden changes.',
   'sync.overrides.undo': 'Undo (restore my value)',
   'sync.overrides.field.title': 'title',
@@ -490,13 +460,10 @@ export const en: Record<MessageKey, string> = {
   'sync.overrides.field.logicalRootId': 'root',
   'sync.events.title': 'Sync log',
   'sync.events.empty': 'No sync log entries yet.',
-  'sync.events.note':
-    'The 100 most recent sync results kept on this device. These records <strong>live on this device only</strong>: ' +
-    'they are never uploaded and never influence any sync decision.',
+  'sync.events.note': 'Last 100 sync results on this device; never uploaded.',
   // ---- Snapshots (既有约定 revision / 既有约定: the UI name for restore points; the data layer still calls them restore points) ----
   'snapshot.title': 'Snapshots',
-  'snapshot.lead':
-    'After every successful sync, that complete bookmark state is saved to the cloud as a snapshot. If you delete something by mistake, the whole tree can be rolled back to any earlier snapshot — including anything deleted after it.',
+  'snapshot.lead': 'Every successful sync saves a full snapshot you can roll back to.',
   'snapshot.status.title': 'Safety net status',
   'snapshot.status.lastWrite': 'Last written',
   'snapshot.status.count': 'Snapshots in the cloud',
@@ -525,7 +492,7 @@ export const en: Record<MessageKey, string> = {
   'snapshot.empty.action': 'Set up sync',
   'snapshot.trashHint': 'Only looking for one or two bookmarks? Use the Trash at the bottom of the sidebar on the start page.',
   'snapshot.fold': 'About snapshots and retention',
-  'snapshot.note':
+  'snapshot.detail':
     'Snapshots live on your own WebDAV and <strong>share one history across the whole space</strong>, one copy per distinct state. ' +
     '"Roll back to this snapshot" is <strong>forward-only</strong>: it turns the difference into an ordinary batch of changes and pushes them ' +
     '(it does not rewrite cloud history or rewind sync progress), so other browsers merge it like any normal edit and report conflicts as usual. ' +
@@ -559,10 +526,8 @@ export const en: Record<MessageKey, string> = {
   'sync.danger.reset': 'Reset sync (remote included)',
   'sync.danger.resetting': 'Resetting…',
   'sync.danger.resetConfirm': 'Click again to confirm reset',
-  'sync.danger.hint':
-    'Disconnecting removes only the configuration and password; your browser bookmarks are unaffected. ' +
-    'Clearing local sync state deletes the ID mapping and log stored on this device, so a future connection has to compare everything again; ' +
-    'it likewise never deletes or modifies browser bookmarks.',
+  'sync.danger.hint': 'Disconnecting removes only config and password, not bookmarks.',
+  'sync.danger.detail': 'Disconnecting removes only the configuration and password; your browser bookmarks are unaffected. Clearing local sync state deletes the ID mapping and log stored on this device, so a future connection has to compare everything again; it likewise never deletes or modifies browser bookmarks.',
   'sync.danger.resetHint':
     '<strong>Resetting sync</strong> additionally wipes the entire sync history in the cloud and starts this device over. ' +
     'It cannot be undone, and is normally used only when sync hits an error it cannot self-heal (duplicate bookmarks being generated repeatedly, for example). ' +

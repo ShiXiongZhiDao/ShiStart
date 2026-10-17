@@ -211,6 +211,10 @@ const localeOptions = computed<Array<{ id: LocaleMode; label: string }>>(() => [
           {{ t('appearance.cardsPerRow.capped') }}
         </span>
       </p>
+      <details class="fold">
+        <summary>{{ t('common.expand') }}</summary>
+        <p class="hint" v-html="t('appearance.cardsPerRow.detail')"></p>
+      </details>
     </section>
   </div>
 </template>
