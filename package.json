@@ -2,7 +2,7 @@
   "name": "shistart",
   "description": "在新标签页中快速查看和搜索浏览器书签。",
   "private": true,
-  "version": "1.2.1",
+  "version": "1.3.0",
   "type": "module",
   "scripts": {
     "dev": "wxt",
