@@ -1987,18 +1987,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                     <!-- 鼠标移到网格末尾才出现的「新建」卡。固定入口在标题行，
                          这张是"顺手就点在末尾"的快捷方式；触屏与键盘没有 hover，
                          对它们不显示 —— 所以它永远不是唯一入口。 -->
-                    <button
-                      v-if="createTargetId"
-                      type="button"
-                      class="new-tile"
-                      :title="t('home.edit.newHint', { folder: activeFolder?.title ?? '' })"
-                      @click="startCreateIn(createTargetId, 'bookmark')"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-                        <path d="M12 5v14M5 12h14" />
-                      </svg>
-                      <span>{{ t('home.edit.new') }}</span>
-                    </button>
                   </div>
                   <StatePanel
                     v-else
@@ -2030,18 +2018,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                       @contextmenu.prevent="openBookmarkMenu(item, $event)"
                       @open="openNonWebBookmark(item)"
                     />
-                    <button
-                      v-if="createTargetId"
-                      type="button"
-                      class="new-tile"
-                      :title="t('home.edit.newHint', { folder: activeFolder?.title ?? '' })"
-                      @click="startCreateIn(createTargetId, 'bookmark')"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-                        <path d="M12 5v14M5 12h14" />
-                      </svg>
-                      <span>{{ t('home.edit.new') }}</span>
-                    </button>
                   </div>
 
                   <section
@@ -2052,14 +2028,31 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                     :aria-label="`${child.title}，${t('home.countBookmarks', { n: child.count })}`"
                   >
                     <!-- 标题 = 那个子目录的拖动把手；落点判定在这一节上（见 groupDropProps）。
-                         右键它 = 右键这个子文件夹。 -->
-                    <h2
-                      class="group-title"
-                      v-bind="groupDragProps(child)"
-                      @contextmenu.prevent="openFolderMenu(child, $event)"
-                    >
-                      {{ child.title }}
-                    </h2>
+                         右键它 = 右键这个子文件夹。
+                         新建入口也在这一行（既有约定 修订）：卡片与文件夹块末尾那两张
+                         悬停新建卡已删，只留标题右侧，和顶层标题行同一个形态。 -->
+                    <div class="group-head">
+                      <h2
+                        class="group-title"
+                        v-bind="groupDragProps(child)"
+                        @contextmenu.prevent="openFolderMenu(child, $event)"
+                      >
+                        {{ child.title }}
+                      </h2>
+                      <!-- 默认建书签，弹窗里有「书签 / 文件夹」切换 —— 一个入口管两种。 -->
+                      <button
+                        v-if="createTargetFor(child.id)"
+                        type="button"
+                        class="ghost-btn new-entry"
+                        :title="t('home.edit.newHint', { folder: child.title })"
+                        @click="startCreateIn(child.id, 'bookmark')"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        <span>{{ t('home.edit.new') }}</span>
+                      </button>
+                    </div>
                     <div v-if="child.children.length > 0" class="folder-grid">
                       <FolderTile
                         v-for="grandChild in child.children"
@@ -2071,18 +2064,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                       />
                       <!-- 末尾的悬停新建卡建进**这一节自己的文件夹** —— 卡片与文件夹块
                            都是它的内容，落在它们旁边的那张卡理应也是。 -->
-                      <button
-                        v-if="createTargetFor(child.id)"
-                        type="button"
-                        class="new-tile is-folder"
-                        :title="t('home.edit.newHint', { folder: child.title })"
-                        @click="startCreateIn(child.id, 'folder')"
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                          <path d="M12 5v14M5 12h14" />
-                        </svg>
-                        <span>{{ t('home.edit.new') }}</span>
-                      </button>
                     </div>
                     <div v-if="child.bookmarks.length > 0" class="bookmark-grid">
                       <BookmarkCard
@@ -2093,18 +2074,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                         @contextmenu.prevent="openBookmarkMenu(item, $event)"
                         @open="openNonWebBookmark(item)"
                       />
-                      <button
-                        v-if="createTargetFor(child.id)"
-                        type="button"
-                        class="new-tile"
-                        :title="t('home.edit.newHint', { folder: child.title })"
-                        @click="startCreateIn(child.id, 'bookmark')"
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-                          <path d="M12 5v14M5 12h14" />
-                        </svg>
-                        <span>{{ t('home.edit.new') }}</span>
-                      </button>
                     </div>
                   </section>
                 </template>

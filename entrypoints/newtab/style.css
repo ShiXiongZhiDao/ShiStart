@@ -1313,6 +1313,27 @@ body.is-resizing {
   margin-bottom: var(--sp-8);
 }
 
+/*
+ * 分组标题行：标题 + 右侧新建入口（既有约定 修订）。
+ *
+ * 原来新建入口是网格末尾那张悬停卡 —— 卡片和文件夹块的最后一块。删掉之后
+ * **分组内部就没有入口了**（要往某个分组里加东西得先点进去），所以把它挪到标题行，
+ * 和顶层标题行 `.section-head` 保持同一个形态与显现规则。
+ */
+.group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-5);
+  margin-bottom: var(--sp-5);
+}
+
+/* 标题自己是 flex 子项：不给 min-width: 0，长目录名会把右侧按钮挤出可视区。 */
+.group-head .group-title {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
 .group-title {
   margin: 0 0 var(--sp-5);
   font-size: var(--fs-xl);
@@ -1856,11 +1877,13 @@ body.is-resizing {
   }
 }
 
-/* ---------- 新建：入口与悬停新建卡（既有约定，卡片部分是它的） ----------
-   ⚠️ 这一节原来还住着内联编辑器（`.editor-*`），既有约定 把新建/改名换成弹窗后
-   那些规则删了。**但这一节剩下的两条不是它的附属** —— 它们是卡片网格与 section
-   标题行的东西，删掉会立刻把主页弄坏（2026-10-14 真删坏过一次：`.new-tile` 的
-   尺寸一没，网格那张「+ 新建」撑成巨块，同一行其它卡片跟着被拉高）。 */
+/* ---------- 新建：标题行右侧入口（既有约定，2026-10-17 修订） ----------
+   ⚠️ 这一节原来还住着内联编辑器（`.editor-*`），既有约定 把新建/改名换成弹窗后删了；
+   2026-10-17 又把**网格末尾那两张悬停新建卡**（`.new-tile`）删掉，入口统一到标题行右侧
+   （顶层 `.section-head` + 每个分组 `.group-head`）。那次删除连带作废了一条旧警告：
+   从前删掉 `.new-tile` 的尺寸会让网格里的「+ 新建」撑成巨块、同一行卡片跟着被拉高 ——
+   现在网格里根本没有这张卡了，那条约束不再适用。
+   **但 `.new-entry` 自己的尺寸仍然不能省**：它嵌在标题行里，高度一丢会把标题行撑高。 */
 
 /*
  * 标题行右侧的「＋新建」：**指针设备上悬停才显现**（既有约定，用户原话
@@ -1883,6 +1906,7 @@ body.is-resizing {
 }
 
 .section-head:hover .new-entry,
+.group-head:hover .new-entry,
 .new-entry:focus-within {
   opacity: 1;
 }
@@ -1896,59 +1920,6 @@ body.is-resizing {
 .new-entry svg {
   width: 12px;
   height: 12px;
-  flex: 0 0 auto;
-}
-
-/*
- * 网格末尾的悬停新建卡。
- *
- * 默认完全透明且**不接指针**：它占着网格最后一个格子，看不见却还能点的话，
- * 就会在"什么也看不见的地方"吞掉一次点击。鼠标移进网格才显形。
- * 键盘走 :focus-visible 同样显形（Tab 能移到它），所以它不是纯鼠标设施。
- */
-.new-tile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-4);
-  min-height: 56px;
-  padding: var(--sp-4) var(--sp-6);
-  border: 1px dashed var(--line-strong);
-  border-radius: var(--radius-lg);
-  background: transparent;
-  color: var(--text-3);
-  font-family: inherit;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-  cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity var(--dur-base) var(--ease-standard),
-    color var(--dur-fast) var(--ease-standard),
-    border-color var(--dur-fast) var(--ease-standard);
-}
-
-/* 文件夹网格里的那张与文件夹块同高，别在网格里戳出一个高个子。 */
-.new-tile.is-folder {
-  min-height: 38px;
-}
-
-.bookmark-grid:hover .new-tile,
-.folder-grid:hover .new-tile,
-.new-tile:focus-visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.new-tile:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.new-tile svg {
-  width: 15px;
-  height: 15px;
   flex: 0 0 auto;
 }
 
