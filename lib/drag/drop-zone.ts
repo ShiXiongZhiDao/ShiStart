@@ -29,9 +29,7 @@ export function dropEdgePx(height: number): number {
 }
 
 /**
- * 按**纵向**位置判定落点。
- *
- * 一律用纵向，横向网格与纵向列表共用一套手感。
+ * 按**纵向**位置判定落点。纵向列表（侧边栏目录树、分组块）用它。
  *
  * @param mode 'edge' = 只分前后（书签卡片，没有"里面"可进）；'folder' = 三段。
  * @param allowEdge false 时只认"放进去" —— 一级目录用它，改一级目录的次序等于
@@ -51,5 +49,31 @@ export function zoneFromVertical(input: {
   const edge = dropEdgePx(height);
   if (offsetY < edge) return 'before';
   if (height - offsetY < edge) return 'after';
+  return 'inside';
+}
+
+/**
+ * 按**横向**位置判定落点。横向铺开的网格（书签卡片、文件夹块）用它。
+ *
+ * ★ 2026-10-17 之前这里没有这一份：卡片区是 `auto-fill, minmax(240px)` 的**横排**网格，
+ *   落点却按上下半判，而插入线早就画的是左右竖条（style.css 里 .bookmark-card.drop-before
+ *   是 inset 3px 0）—— 样式和几何从一开始就说的两件事。
+ *   症状：横向拖拽时指针通常在卡片竖直中线以下 ⇒ 永远判成"插到它后面" ⇒
+ *   向**后**拖一格正好落回原位（被 same-position 静默拒掉），向**前**拖一格却正常。
+ */
+export function zoneFromHorizontal(input: {
+  /** 落点元素的宽度（px）。 */
+  width: number;
+  /** 指针在元素内的横向偏移（px）。 */
+  offsetX: number;
+  mode: 'edge' | 'folder';
+  allowEdge?: boolean;
+}): DropZone {
+  const { width, offsetX, mode, allowEdge = true } = input;
+  if (mode === 'edge') return offsetX < width / 2 ? 'before' : 'after';
+  if (!allowEdge) return 'inside';
+  const edge = dropEdgePx(width);
+  if (offsetX < edge) return 'before';
+  if (width - offsetX < edge) return 'after';
   return 'inside';
 }

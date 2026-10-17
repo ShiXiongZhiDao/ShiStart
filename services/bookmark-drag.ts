@@ -15,7 +15,6 @@
 import {
   clampDropIndex,
   nativeIndexFor,
-  shiftForRemoval,
   type DropResolution,
 } from '../lib/drag/drop-plan';
 import {
@@ -62,10 +61,11 @@ export async function moveBookmarkNode(resolution: DropResolution): Promise<Move
   const nodeTitle = node.title ?? '';
 
   const childIds = await readNativeChildIds(resolution.parentId);
-  const sameParent = childIds.includes(resolution.nodeId);
-  const wanted = nativeIndexFor(childIds, resolution.containerIds, resolution.insertAt);
-  const shifted = shiftForRemoval(wanted, childIds, resolution.nodeId);
-  const index = clampDropIndex(shifted, childIds.length, sameParent);
+  // ★ 直接把锚点的**当前下标**交给浏览器：`chrome.bookmarks.move` 的 index 就是
+  //   "插到当前列表第 N 个元素之前"，`== 长度` 表示追加（2026-10-17 真机实测，既有约定）。
+  //   曾经这里还减一（"摘除后左移一位"的假设），那是错的：前移整体少一位、
+  //   移到末尾会落在倒数第二格。
+  const index = clampDropIndex(nativeIndexFor(childIds, resolution.containerIds, resolution.insertAt), childIds.length);
 
   // 原来的位置已经读到了，接下来无论成功失败都不影响撤销记录的内容。
   const recordBase = {
@@ -84,7 +84,7 @@ export async function moveBookmarkNode(resolution: DropResolution): Promise<Move
   } catch (error) {
     // 既有约定 记下的边界：跨目录移动时"追加到末尾"可能被浏览器按摘除前的计数拒绝。
     // 退一位再试一次；还不行就把原始错误原样抛出去，绝不假装成功。
-    const fallback = clampDropIndex(index - 1, childIds.length, sameParent);
+    const fallback = clampDropIndex(index - 1, childIds.length);
     if (fallback === index) throw new EditError('write-failed', describeNativeError(error));
     try {
       await bookmarks.move(resolution.nodeId, { parentId: resolution.parentId, index: fallback });

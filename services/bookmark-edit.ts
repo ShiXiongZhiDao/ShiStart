@@ -354,7 +354,7 @@ export async function undoLastEdit(): Promise<LastEdit> {
     await readNativeNode(record.nodeId);
     await readNativeNode(record.fromParentId);
     const childIds = await readNativeChildIds(record.fromParentId);
-    const index = clampDropIndex(record.fromIndex, childIds.length, childIds.includes(record.nodeId));
+    const index = clampDropIndex(record.fromIndex, childIds.length);
     try {
       await moveNativeNode(record.nodeId, record.fromParentId, index);
     } catch (error) {

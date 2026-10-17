@@ -14,6 +14,11 @@ const props = defineProps<{
   dragEnabled: boolean;
   /** 新建 / 改名有没有开。关掉时不弹右键菜单。 */
   menuEnabled: boolean;
+  /**
+   * 同一层的兄弟 id（界面顺序）。同父排序的"往前往后"由它决定 ——
+   * 指针落在目标的哪一半不参与（2026-10-17 修的那条：抓右半边往左拖永远是"插到前一张之后"）。
+   */
+  siblingIds?: string[];
 }>();
 
 const emit = defineEmits<{ select: [id: string]; toggle: [id: string] }>();
@@ -128,7 +133,7 @@ function handleKeydown(event: KeyboardEvent): void {
       @click="handleClick"
       @keydown="handleKeydown"
       @contextmenu.prevent="openMenu"
-      @dragstart="begin({ id: node.id, kind: 'folder', title: node.title }, $event)"
+      @dragstart="begin({ id: node.id, kind: 'folder', title: node.title, siblingIds: props.siblingIds }, $event)"
       @dragend="cancel()"
       @dragover="over($event, node.id, 'folder', !isTopLevel)"
       @drop="drop($event, node.id, 'folder', !isTopLevel)"
@@ -193,6 +198,7 @@ function handleKeydown(event: KeyboardEvent): void {
             :is-expanded="isExpanded"
             :drag-enabled="dragEnabled"
             :menu-enabled="menuEnabled"
+            :sibling-ids="node.children.map((sibling) => sibling.id)"
             @select="(id: string) => emit('select', id)"
             @toggle="(id: string) => emit('toggle', id)"
           />

@@ -770,6 +770,46 @@ const editEnabled = computed(
 const lastEdit = ref<LastEdit | null>(null);
 
 /** 书签卡片：只能插到别人前/后（它没有"里面"可进）。 */
+/**
+ * 拖拽判定要的两个索引，一次遍历树建好（别在每张卡片上现算 —— 网格里是 O(n²)）：
+ * - `childrenOf`：目录 id → 直接子节点 id（先文件夹后书签，界面顺序）
+ * - `parentOf`  ：目录 id → 它的父目录 id
+ *
+ * 同父排序的"往前往后"只比**相对次序**，所以混排另一类节点不影响结论
+ * （`resolveReorderZone` 比的是同一个列表里的两个下标）。
+ */
+const dragIndex = computed(() => {
+  const childrenOf = new Map<string, string[]>();
+  const parentOf = new Map<string, string>();
+  const stack = [...roots.value];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (!node) continue;
+    childrenOf.set(node.id, [
+      ...node.children.map((child) => child.id),
+      ...node.bookmarks.map((bookmark) => bookmark.id),
+    ]);
+    for (const child of node.children) {
+      parentOf.set(child.id, node.id);
+      stack.push(child);
+    }
+  }
+  return { childrenOf, parentOf };
+});
+
+/** 书签卡片的兄弟（同一父目录下的界面顺序）。 */
+function siblingsOfBookmark(item: BookmarkViewItem): string[] {
+  // parentId 在类型上是可选的（"未归类"里的散落书签没有能排序的父）—— 给空数组 = 只按几何判。
+  if (item.parentId === undefined) return [];
+  return dragIndex.value.childrenOf.get(item.parentId) ?? [];
+}
+
+/** 文件夹块的兄弟；一级目录没有父，返回空 = 只按几何判（它本来也只接受"放进去"）。 */
+function siblingsOfFolder(node: BookmarkFolderNode): string[] {
+  const parentId = dragIndex.value.parentOf.get(node.id);
+  return parentId === undefined ? [] : (dragIndex.value.childrenOf.get(parentId) ?? []);
+}
+
 function cardDragProps(item: BookmarkViewItem) {
   if (!dragEnabled.value) return {};
   const zone = hintZone(item.id);
@@ -781,14 +821,18 @@ function cardDragProps(item: BookmarkViewItem) {
       'drop-after': zone === 'after',
     },
     onDragstart: (event: DragEvent) =>
-      begin({ id: item.id, kind: 'bookmark', title: item.title }, event),
+      begin(
+        { id: item.id, kind: 'bookmark', title: item.title, siblingIds: siblingsOfBookmark(item) },
+        event,
+      ),
     onDragend: () => cancel(),
-    onDragover: (event: DragEvent) => over(event, item.id, 'edge'),
-    onDrop: (event: DragEvent) => drop(event, item.id, 'edge'),
+    // 卡片是横排网格 ⇒ 轴是 x（插入线也是左右竖条，与判定同一套几何）。
+    onDragover: (event: DragEvent) => over(event, item.id, 'edge', true, 'x'),
+    onDrop: (event: DragEvent) => drop(event, item.id, 'edge', true, 'x'),
   };
 }
 
-/** 文件夹块：既是拖动把手也是落点，三段判定 —— 上下缘插到它旁边，中间放进去。 */
+/** 文件夹块：既是拖动把手也是落点，三段判定 —— 左右缘插到它旁边，中间放进去。 */
 function folderDragProps(node: BookmarkFolderNode) {
   if (!dragEnabled.value) return {};
   const zone = hintZone(node.id);
@@ -802,10 +846,14 @@ function folderDragProps(node: BookmarkFolderNode) {
       'drop-inside': zone === 'inside',
     },
     onDragstart: (event: DragEvent) =>
-      begin({ id: node.id, kind: 'folder', title: node.title }, event),
+      begin(
+        { id: node.id, kind: 'folder', title: node.title, siblingIds: siblingsOfFolder(node) },
+        event,
+      ),
     onDragend: () => cancel(),
-    onDragover: (event: DragEvent) => over(event, node.id, 'folder'),
-    onDrop: (event: DragEvent) => drop(event, node.id, 'folder'),
+    // 文件夹块与卡片同处横排网格 ⇒ 同样走 x 轴。
+    onDragover: (event: DragEvent) => over(event, node.id, 'folder', true, 'x'),
+    onDrop: (event: DragEvent) => drop(event, node.id, 'folder', true, 'x'),
   };
 }
 
@@ -816,7 +864,10 @@ function groupDragProps(node: BookmarkFolderNode) {
     draggable: true,
     class: { 'is-dragging': dragging.value?.id === node.id },
     onDragstart: (event: DragEvent) =>
-      begin({ id: node.id, kind: 'folder', title: node.title }, event),
+      begin(
+        { id: node.id, kind: 'folder', title: node.title, siblingIds: siblingsOfFolder(node) },
+        event,
+      ),
     onDragend: () => cancel(),
   };
 }

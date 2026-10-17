@@ -26,6 +26,7 @@ const emit = defineEmits<{ select: [id: string]; toggle: [id: string] }>();
       :is-expanded="isExpanded"
       :drag-enabled="dragEnabled"
       :menu-enabled="menuEnabled"
+      :sibling-ids="roots.map((item) => item.id)"
       @select="(id: string) => emit('select', id)"
       @toggle="(id: string) => emit('toggle', id)"
     />

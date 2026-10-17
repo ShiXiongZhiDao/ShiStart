@@ -11,8 +11,13 @@
  *    所以"容器里的第 3 位"**不等于**原生 children 列表里的第 3 位 —— 原生列表是
  *    文件夹与网址混排的。必须拿 `getChildren` 的真实列表来定位（`nativeIndexFor`）。
  *
- * 2. **同父移动时浏览器会先把节点摘下来**，它后面的下标整体左移一位。
- *    不减这一位，"插到第 3 位"会变成"插到第 4 位" —— 差一位，肉眼看得见。
+ * 2. **`chrome.bookmarks.move` 的 `index` 是「插到当前列表第 N 个元素之前」**，
+ *    `index == 长度` 表示追加到末尾 —— 与"先把节点摘下来、后面的下标左移一位"**无关**。
+ *    这条是 2026-10-17 在真实 Chrome 上逐个用例实测出来的（见 既有约定）：
+ *    四元素 [A,B,C,D] 把 A 移到 index 2 ⇒ [B,A,C,D]（插在当时的 C 之前），
+ *    移到 index 3 ⇒ [B,C,A,D]，移到 4 ⇒ [B,C,D,A]。
+ *    在此之前这里有一份 `shiftForRemoval`（"摘除后减一"），它让**前移整体少一位**：
+ *    前移一格在真机上其实纹丝不动，而向后"移到末尾"会落在倒数第二格。
  */
 
 import { findFolderNode } from '../bookmark-mapper';
@@ -179,6 +184,33 @@ export function resolveDrop(input: {
 }
 
 /**
+ * 同父排序时"插到前还是后"由**目标与拖动的相对位置**决定，不由指针落在目标的哪一半决定。
+ *
+ * ★ 为什么必须这样（2026-10-17 的 bug）：网格里相邻两张卡片尺寸相同，横向拖一格时
+ *   指针在目标卡片内的相对位置**和抓取点完全一样**（拖动距离正好是一个格宽）。
+ *   于是几何判定给出的永远是同一个答案：
+ *   - 抓卡片右半边往左拖 ⇒ 目标永远是"after" ⇒ 插到前一张之后 = 原位 ⇒ same-position 静默拒绝；
+ *   - 抓右半边往右拖 ⇒ "after" 落成后移一格 ⇒ 正常。
+ *   这就是"向前正常、向后失败"的来源。
+ *
+ * 规则：目标在拖动项**前面** ⇒ 'before'；在**后面** ⇒ 'after'。
+ * 'inside' 不受影响（那是"放进这个文件夹"，与排序无关）。
+ * 目标不在同一容器里（跨目录拖放）时原样返回几何结果 —— 那种场景下落点半边才是有意义的信号。
+ */
+export function resolveReorderZone(
+  siblingIds: readonly string[],
+  draggedId: string,
+  targetId: string,
+  fallback: DropZone,
+): DropZone {
+  if (fallback === 'inside') return fallback;
+  const targetAt = siblingIds.indexOf(targetId);
+  const draggedAt = siblingIds.indexOf(draggedId);
+  if (targetAt === -1 || draggedAt === -1 || targetAt === draggedAt) return fallback;
+  return targetAt < draggedAt ? 'before' : 'after';
+}
+
+/**
  * 把"插到容器里第 insertAt 个之前"换算成原生 children 列表里的下标。
  *
  * 容器里的兄弟只是原生列表的一个**子集**，所以只能拿它们当锚点去原生列表里定位，
@@ -201,30 +233,16 @@ export function nativeIndexFor(
 }
 
 /**
- * 同父移动时浏览器先把节点摘下来：它**原位之后**的下标整体左移一位。
- * 不减这一位，插到后面的操作会整体偏一格。
- */
-export function shiftForRemoval(
-  index: number,
-  nativeChildIds: readonly string[],
-  nodeId: string,
-): number {
-  const at = nativeChildIds.indexOf(nodeId);
-  if (at === -1 || at > index) return index;
-  return Math.max(0, index - 1);
-}
-
-/**
  * 落点的安全上界。
  *
+ * ★ **`index == 长度` 是合法的**（= 追加到末尾），不是越界。2026-10-17 在真实 Chrome 上实测：
+ *   三元素 [A,B,C] 把 A 移到 index 3 ⇒ [B,C,A]。同父移动也一样（浏览器不按"摘除后的长度"卡）。
+ *
  * 与同步引擎用的 `clampMoveIndex`（`lib/sync/diff.ts`）**故意不同**：那边无人值守，
- * 宁可偏一位也不肯让整次同步失败；而这里是用户当场看着放的，必须落到他放的那个位置，
- * 所以上界按"摘除之后"的真实长度算。跨目录追加到末尾仍可能被浏览器拒绝 ——
- * 那种情况由 service 捕获后退一位并明确回报（既有约定 记的是同一条边界）。
+ * 宁可偏一位也不肯让整次同步失败；而这里是用户当场看着放的。
  */
-export function clampDropIndex(index: number, siblingCount: number, sameParent: boolean): number {
+export function clampDropIndex(index: number, siblingCount: number): number {
   const count = Number.isFinite(siblingCount) ? Math.max(0, Math.trunc(siblingCount)) : 0;
-  const upper = sameParent ? Math.max(0, count - 1) : count;
   if (!Number.isFinite(index)) return 0;
-  return Math.min(Math.max(0, Math.trunc(index)), upper);
+  return Math.min(Math.max(0, Math.trunc(index)), count);
 }

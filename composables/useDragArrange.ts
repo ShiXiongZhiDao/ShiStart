@@ -1,6 +1,6 @@
 import { ref } from 'vue';
-import { zoneFromVertical } from '../lib/drag/drop-zone';
-import type { DropZone } from '../lib/drag/drop-plan';
+import { zoneFromHorizontal, zoneFromVertical } from '../lib/drag/drop-zone';
+import { resolveReorderZone, type DropZone } from '../lib/drag/drop-plan';
 
 /**
  * 拖拽整理的状态机。
@@ -12,10 +12,22 @@ import type { DropZone } from '../lib/drag/drop-plan';
  * 它住在 App.vue 里，因为只有那里握着整棵树。
  */
 
+/** 落点按哪个轴判：横向网格（卡片、文件夹块）用 x，纵向列表（侧边栏、分组）用 y。 */
+export type DragAxis = 'x' | 'y';
+
 export interface DragSource {
   id: string;
   kind: 'bookmark' | 'folder';
   title: string;
+  /**
+   * 同一容器里兄弟的 id（界面顺序）。
+   *
+   * 有了它，同父排序的"前/后"由**目标与拖动的相对位置**决定（`resolveReorderZone`）——
+   * 指针落在目标的哪一半不参与。没有它只能按几何判，而"抓卡片右半边往左拖"
+   * 在几何上永远落成"插到前一张之后" = 原位（2026-10-17 修的就是这个）。
+   * 跨目录拖放时它会被原样忽略：那种场景下落点在哪一半才是有意义的信号。
+   */
+  siblingIds?: string[];
 }
 
 export interface DropHint {
@@ -63,27 +75,54 @@ export function useDragArrange() {
   /**
    * 落点判定。
    *
-   * 一律按**纵向**位置算：卡片网格是横向铺开的，但"插到它前面/后面"用上下半来判断
-   * 在纵横两种布局里都说得通，且与侧边栏（纵向列表）保持同一套手感。
+   * 轴由布局决定：横向网格（卡片、文件夹块）走 `zoneFromHorizontal`，
+   * 纵向列表（侧边栏、分组）走 `zoneFromVertical`。
+   *
+   * ★ 判定顺序很要紧：**先按几何算出落在哪一段，再让"同父排序"的方向规则盖掉前/后**。
+   *   反过来（先方向、再几何）会把文件夹的"放进去"整段吃掉。
    *
    * @param mode 'edge' = 只分前后（书签卡片，没有"里面"可进）；
    *             'folder' = 三段（前后 + 放进去）。
    * @param allowEdge false 时只认"放进去" —— 一级目录用它，因为改一级目录的次序
    *                  等于改浏览器根节点下的顺序，不开放。
+   * @param axis 'x' = 横向网格；'y' = 纵向列表（默认）。
    */
-  function zoneFor(event: DragEvent, mode: 'edge' | 'folder', allowEdge: boolean): DropZone {
+  function zoneFor(
+    event: DragEvent,
+    targetId: string,
+    mode: 'edge' | 'folder',
+    allowEdge: boolean,
+    axis: DragAxis,
+  ): DropZone {
     const element = event.currentTarget as HTMLElement | null;
     const rect = element?.getBoundingClientRect();
-    if (!rect || rect.height === 0) return mode === 'folder' ? 'inside' : 'before';
-    return zoneFromVertical({
-      height: rect.height,
-      offsetY: event.clientY - rect.top,
-      mode,
-      allowEdge,
-    });
+    if (!rect || rect.height === 0 || rect.width === 0) return mode === 'folder' ? 'inside' : 'before';
+    const geometric =
+      axis === 'x'
+        ? zoneFromHorizontal({
+            width: rect.width,
+            offsetX: event.clientX - rect.left,
+            mode,
+            allowEdge,
+          })
+        : zoneFromVertical({
+            height: rect.height,
+            offsetY: event.clientY - rect.top,
+            mode,
+            allowEdge,
+          });
+    const source = dragging.value;
+    if (!source?.siblingIds || source.id === targetId) return geometric;
+    return resolveReorderZone(source.siblingIds, source.id, targetId, geometric);
   }
 
-  function over(event: DragEvent, targetId: string, mode: 'edge' | 'folder', allowEdge = true): void {
+  function over(
+    event: DragEvent,
+    targetId: string,
+    mode: 'edge' | 'folder',
+    allowEdge = true,
+    axis: DragAxis = 'y',
+  ): void {
     const source = dragging.value;
     // 拖到自己身上没有意义（放进自己 = 造环，插到自己旁边 = 原地）。
     // 这里**不** preventDefault，浏览器因此不会给 drop —— 连视觉反馈都不给。
@@ -93,15 +132,21 @@ export function useDragArrange() {
     // 分组是嵌着卡片与文件夹块的：里层先接管，外层（整节）才轮得到。
     event.stopPropagation();
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-    hint.value = { targetId, zone: zoneFor(event, mode, allowEdge) };
+    hint.value = { targetId, zone: zoneFor(event, targetId, mode, allowEdge, axis) };
   }
 
-  function drop(event: DragEvent, targetId: string, mode: 'edge' | 'folder', allowEdge = true): void {
+  function drop(
+    event: DragEvent,
+    targetId: string,
+    mode: 'edge' | 'folder',
+    allowEdge = true,
+    axis: DragAxis = 'y',
+  ): void {
     const source = dragging.value;
     if (!source || source.id === targetId) return;
     event.preventDefault();
     event.stopPropagation();
-    const zone = zoneFor(event, mode, allowEdge);
+    const zone = zoneFor(event, targetId, mode, allowEdge, axis);
     cancel();
     dropHandler?.({ draggedId: source.id, targetId, zone });
   }
