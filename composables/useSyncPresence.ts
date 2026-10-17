@@ -119,12 +119,13 @@ export function useSyncPresence(deps: SyncPresenceDeps = {}): SyncPresence {
    * 刷新侧边栏那个角标。**纯本机，零网络**（"待同步"那一档也是本地对账算出来的）。
    *
    * 读失败就当 0：它是个角标，不该因为它把整页弄出错误态。真正的"读不到"由面板自己报。
+   *
+   * **不再因为"没配置同步"就提前归零**（2026-10-17 修）：墓碑存在**本机基线**里，
+   * 断开配置不会删它；而恢复是"重建原生书签 + 换绑映射"（既有约定，零网络），
+   * 也不依赖同步配置。曾经同步过又断开配置的用户，本地墓碑仍在、也仍能就地恢复 ——
+   * 提前归零再配上入口的 `v-if`，会把它们彻底挡在看不见的地方。
    */
   async function refreshTrashCount(): Promise<void> {
-    if (!syncConfigured.value) {
-      trashCount.value = 0;
-      return;
-    }
     try {
       const view = await readTrashView();
       trashCount.value = view.tombs.length + view.pending.length;

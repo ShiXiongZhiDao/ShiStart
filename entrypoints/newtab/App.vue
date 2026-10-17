@@ -100,7 +100,9 @@ const notice = ref('');
  * 所以它们单独住在 `useSyncPresence` 里：一处定义"收到「同步跑完了」该刷什么"，
  * 而且能在 node 里测（本组件太大，仓库没有组件测试基座）。
  *
- * `syncConfigured` 除了决定删除确认那行怎么写，**还是侧边栏回收站入口的 `v-if`**；
+ * `syncConfigured` 决定删除确认那行怎么写；回收站入口的 `v-if` 是
+ * `syncConfigured || trashCount > 0` —— 曾经同步过又断开配置的用户，本地墓碑还在、
+ * 也还能就地恢复（既有约定 零网络），不能因为"现在没配服务器"就把入口收起来（2026-10-17 修）；
  * `autoSyncOn` 与它配合，把"删了能不能找回"分成三档而不是两档（见 recoveryMode）。
  */
 const {
@@ -1830,7 +1832,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
       <div class="sidebar-bottom">
         <!-- 回收站：删掉的东西的落点，就在删除动作的旁边。 -->
         <button
-          v-if="syncConfigured"
+          v-if="syncConfigured || trashCount > 0"
           type="button"
           class="nav-item trash-entry"
           :class="{ active: activeView === 'trash' }"
