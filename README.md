@@ -155,16 +155,27 @@ pnpm zip         # 打成商店上传用的 zip
 然后照上面「怎么装上」从第 2 步起，把 `.output/chrome-mv3` 当未打包目录加载进去。
 `pnpm compile` 是类型检查，`pnpm test` 是纯函数单测。
 
-## 参与
-
-- 报问题、提想法：开 Issue。
-- 改东西：直接开 PR。**动手前先开个 Issue 说清楚要改什么** —— 省得你改的方向
-  和这一版的方向撞车，白写一遍。
-
 ## 更新记录
 
 见 [CHANGELOG.md](./CHANGELOG.md)。隐私说明见 [PRIVACY.md](./PRIVACY.md)。
 
----
+## ☕ 支持作者
 
-MIT 授权，见 [LICENSE](./LICENSE)。
+如果师兄起页帮你省下了一个下午，可以请作者喝杯咖啡 —— 谢谢你，这让项目能继续走下去。
+
+| 支付宝 | 微信支付 |
+|---|---|
+| <img src="assets/qr/alipay.png" width="150" alt="支付宝收款码"> | <img src="assets/qr/wechat-pay.png" width="150" alt="微信支付收款码"> |
+
+## 许可与声明
+
+师兄起页以 **MIT 授权**开源 —— 见 [LICENSE](./LICENSE)。
+
+## 📮 联系
+
+- 个人网站：[shixiongzhidao.cn](https://shixiongzhidao.cn)
+- GitHub & Gitee：[GitHub](https://github.com/ShiXiongZhiDao/ShiStart) ·
+  [Gitee](https://gitee.com/ShiXiongZhiDao/ShiStart)
+- 公众号：**师兄知道** —— 扩展的关于页里也是这一个
+
+<img src="assets/qr/wechat-official.png" width="560" alt="公众号二维码">

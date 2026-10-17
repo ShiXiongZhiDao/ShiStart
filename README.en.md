@@ -175,17 +175,29 @@ Then follow step 2 of "How to install" above, loading `.output/chrome-mv3` as th
 unpacked directory. `pnpm compile` runs the type check and `pnpm test` the pure-function
 unit tests.
 
-## Contributing
-
-- Found a bug or have an idea: open an issue.
-- Want to change something: open a PR. **Please open an issue first describing what you
-  intend to change** — it saves you from writing something that collides with the
-  direction this version is already going.
-
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md). Privacy policy: [PRIVACY.md](./PRIVACY.md).
 
----
+## ☕ Support the author
 
-MIT licensed — see [LICENSE](./LICENSE).
+If ShiStart has saved you an afternoon, you can buy the author a coffee — thank you,
+it keeps the project going.
+
+| Alipay | WeChat Pay |
+|---|---|
+| <img src="assets/qr/alipay.png" width="150" alt="Alipay QR code"> | <img src="assets/qr/wechat-pay.png" width="150" alt="WeChat Pay QR code"> |
+
+## License & notes
+
+ShiStart is open source under the **MIT license** — see [LICENSE](./LICENSE).
+
+## 📮 Contact
+
+- Website: [shixiongzhidao.cn](https://shixiongzhidao.cn)
+- GitHub & Gitee: [GitHub](https://github.com/ShiXiongZhiDao/ShiStart) ·
+  [Gitee](https://gitee.com/ShiXiongZhiDao/ShiStart)
+- WeChat channel: **师兄知道** (ShiXiongZhiDao) — the same one shown on the
+  extension's About page
+
+<img src="assets/qr/wechat-official.png" width="560" alt="WeChat channel QR code">
