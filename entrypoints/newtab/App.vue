@@ -1899,6 +1899,13 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                 @focusout="resumeUndoCountdown"
               >
                 <span class="drag-undo-text">{{ undoBarText }}</span>
+                <!-- 剩余时间的短刻度：轨道 + 填充，夹在文字与按钮之间（既有约定 修订二）。
+                     刻意不做成贴底的横线 —— 横跨整个容器的线，在圆角矩形里只会被读成
+                     "这条提示的下边框在变短"，而不是一个倒计时。
+                     aria-hidden：读屏念一个只减不增的比例毫无用处，条子本身才是信息。 -->
+                <span class="drag-undo-meter" aria-hidden="true">
+                  <span class="drag-undo-meter-fill" :style="{ transform: `scaleX(${undoProgress})` }"></span>
+                </span>
                 <button type="button" class="ghost-btn" :disabled="undoTargetMissing" @click="undoLastChange">
                   {{ t('home.drag.undo') }}
                 </button>
@@ -1906,13 +1913,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                   {{ t('home.drag.dismiss') }}
                 </button>
                 <span v-if="undoTargetMissing" class="drag-undo-gone">{{ t('home.edit.undoTargetGone') }}</span>
-                <!-- 剩余时间：用 transform 而不是 width，免得每 100ms 触发布局。
-                     aria-hidden —— 读屏念一个只减不增的数字毫无用处，条子本身才是信息。 -->
-                <span
-                  class="drag-undo-progress"
-                  aria-hidden="true"
-                  :style="{ transform: `scaleX(${undoProgress})` }"
-                ></span>
               </div>
 
               <template v-if="status === 'loading'">
