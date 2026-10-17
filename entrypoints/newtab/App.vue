@@ -38,6 +38,7 @@ import EnginePicker from '../../components/EnginePicker.vue';
 import DeleteFolderDialog from '../../components/DeleteFolderDialog.vue';
 import TrashPanel from '../../components/TrashPanel.vue';
 import { useDragArrange, type DropRequest } from '../../composables/useDragArrange';
+import { useCountdown } from '../../composables/useCountdown';
 import { useItemMenu, type MenuTarget } from '../../composables/useItemMenu';
 import { resolveDrop, type DropRejectCode } from '../../lib/drag/drop-plan';
 import { moveBookmarkNode } from '../../services/bookmark-drag';
@@ -1345,6 +1346,36 @@ async function checkFolderDeleteOutcome(): Promise<void> {
 
 // ---------- 撤销「上一次改动」（既有约定 提出、既有约定 泛化） ----------
 
+/**
+ * 撤销窗口：**从那次改动发生的时刻**算 10 秒。
+ *
+ * 10 秒是"够看清、够移鼠标过去点"的长度；再短会在用户伸手时消失，再长就一直占着屏幕。
+ * 起点用记录里的 `at` 而不是"这一屏渲染的时刻"：否则每次开新标签页都会把这条提示
+ * 重新数一遍 —— 明明几小时前挪的一下，屏幕上也照样挂着一条"上一次移动"。
+ */
+const UNDO_WINDOW_MS = 10_000;
+
+const {
+  remaining: undoRemaining,
+  progress: undoProgress,
+  restart: restartUndoCountdown,
+  pause: pauseUndoCountdown,
+  resume: resumeUndoCountdown,
+} = useCountdown({
+  total: UNDO_WINDOW_MS,
+  deadline: () => (lastEdit.value ? lastEdit.value.at + UNDO_WINDOW_MS : null),
+  onExpire: () => {
+    // 到点 = 这次撤销机会结束，连记录一起清掉：留着它会让下次开新标签页又冒出来，
+    // 而"条子自己收了、刷新又回来"是最让人摸不着头脑的一种状态。
+    lastEdit.value = null;
+    void clearLastEdit();
+  },
+});
+
+// 记录换了一条（新的改动顶掉旧的、或从 storage 恢复）就按它的 `at` 重开一轮。
+// immediate 是必需的：刷新恢复时没有"从 null 变成有值"这个变化可等。
+watch(() => lastEdit.value?.at ?? null, restartUndoCountdown, { immediate: true });
+
 async function undoLastChange(): Promise<void> {
   try {
     const record = await undoLastEdit();
@@ -1361,10 +1392,12 @@ async function undoLastChange(): Promise<void> {
   }
 }
 
-function dismissLastEdit(): void {
-  lastEdit.value = null;
-  void clearLastEdit();
-}
+/**
+ * 撤销条那句 `undoBarText` 在下面；这里不再提供手动关闭的入口。
+ *
+ * 原来有个「不用了」按钮，靠它调 `clearLastEdit`。现在条子 10 秒后自己收，
+ * 手动关闭只剩"提前一点省地方"的价值，却多一个要看要点的按钮 —— 去掉。
+ */
 
 /**
  * 撤销条的目标还在不在树里。
@@ -1845,17 +1878,29 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
               />
 
               <!-- 撤销「上一次改动」（既有约定 提出、既有约定 泛化）。
-                   它是持久的：刷新之后还在，直到下一次改动顶掉它。
+                   10 秒后自动收起，不用手动点关闭；鼠标移上来或键盘 Tab 进来
+                   会暂停计时 —— 用户正要点「撤销」时它消失，比不自动收更糟。
                    目标节点被删掉时按钮禁用并说明原因 —— 不让用户点一个注定失败的操作。 -->
-              <div v-if="lastEdit" class="drag-undo">
+              <div
+                v-if="lastEdit && undoRemaining > 0"
+                class="drag-undo"
+                @mouseenter="pauseUndoCountdown"
+                @mouseleave="resumeUndoCountdown"
+                @focusin="pauseUndoCountdown"
+                @focusout="resumeUndoCountdown"
+              >
                 <span class="drag-undo-text">{{ undoBarText }}</span>
                 <button type="button" class="ghost-btn" :disabled="undoTargetMissing" @click="undoLastChange">
                   {{ t('home.drag.undo') }}
                 </button>
-                <button type="button" class="ghost-btn" @click="dismissLastEdit">
-                  {{ t('home.drag.dismiss') }}
-                </button>
                 <span v-if="undoTargetMissing" class="drag-undo-gone">{{ t('home.edit.undoTargetGone') }}</span>
+                <!-- 剩余时间：用 transform 而不是 width，免得每 100ms 触发布局。
+                     aria-hidden —— 读屏念一个只减不增的数字毫无用处，条子本身才是信息。 -->
+                <span
+                  class="drag-undo-progress"
+                  aria-hidden="true"
+                  :style="{ transform: `scaleX(${undoProgress})` }"
+                ></span>
               </div>
 
               <template v-if="status === 'loading'">

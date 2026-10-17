@@ -1767,8 +1767,16 @@ body.is-resizing {
   white-space: nowrap;
 }
 
-/* 上一次移动的撤销条。它是持久的（刷新后还在），所以做得克制，别长期占视线。 */
+/*
+ * 上一次改动的撤销条。10 秒后自己收，所以不必为"长期占视线"再克制。
+ *
+ * 进度条代替文字倒计时：一条在走的线说明"还剩多久"，而"10 秒"这种数字每帧都在变，
+ * 既分散注意力，又要在两套语言里各写一套量词。
+ * 不设 `overflow: hidden` —— 那会把里面按钮的 focus ring 一起裁掉，
+ * 进度条自己收在 1px 边框以内、自己圆角就够了。
+ */
 .drag-undo {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--sp-4);
@@ -1791,6 +1799,27 @@ body.is-resizing {
 
 .drag-undo .ghost-btn {
   flex: 0 0 auto;
+}
+
+/* 剩余时间。100ms 一步、用 transform 推（不触发布局），transition 抹掉台阶感。 */
+.drag-undo-progress {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  height: 2px;
+  border-radius: 0 0 calc(var(--radius-md) - 1px) calc(var(--radius-md) - 1px);
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform 100ms linear;
+  pointer-events: none;
+}
+
+/* 动效偏好为 reduce 时去掉过渡：条子照常缩短，只是不再有缓动。 */
+@media (prefers-reduced-motion: reduce) {
+  .drag-undo-progress {
+    transition: none;
+  }
 }
 
 /* ---------- 新建：入口与悬停新建卡（既有约定，卡片部分是它的） ----------
