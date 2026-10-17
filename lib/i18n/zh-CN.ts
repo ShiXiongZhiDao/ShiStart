@@ -19,6 +19,8 @@ export const zhCN = {
   'nav.snapshot': '快照',
   'nav.data': '数据',
   'nav.about': '关于',
+  'nav.bookmarks': '书签分类',
+  'folder.childOf': '{title} 的子文件夹',
 
   'common.expand': '展开看看',
   'common.collapse': '收起',

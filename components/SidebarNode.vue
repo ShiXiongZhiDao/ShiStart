@@ -185,7 +185,7 @@ function handleKeydown(event: KeyboardEvent): void {
         v-if="expanded"
         class="nav-children"
         role="group"
-        :aria-label="`${node.title} 的子文件夹`"
+        :aria-label="t('folder.childOf', { title: node.title })"
         :style="{ '--rail-x': `${17 + depth * 13}px` }"
       >
         <div class="nav-children-inner">

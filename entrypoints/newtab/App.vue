@@ -1783,7 +1783,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
           </svg>
         </div>
         <div class="brand-text">
-          <div class="brand-name">师兄起页</div>
+          <div class="brand-name">{{ t('app.name') }}</div>
           <div class="brand-note">{{ t('home.brandNote') }}</div>
         </div>
         <!-- 钉住 ↔ 收起一对（既有约定 决策二）：浮出态显示「钉住」（转持久展开），

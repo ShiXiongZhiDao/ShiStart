@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import SidebarNode from './SidebarNode.vue';
+import { useI18n } from '../composables/useI18n';
 import type { BookmarkFolderNode } from '../types/bookmarks';
+
+const { t } = useI18n();
 
 defineProps<{
   roots: BookmarkFolderNode[];
@@ -16,7 +19,7 @@ const emit = defineEmits<{ select: [id: string]; toggle: [id: string] }>();
 </script>
 
 <template>
-  <nav class="sidebar-nav" aria-label="书签分类">
+  <nav class="sidebar-nav" :aria-label="t('nav.bookmarks')">
     <SidebarNode
       v-for="node in roots"
       :key="node.id"

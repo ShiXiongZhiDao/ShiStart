@@ -26,6 +26,8 @@ export const en: Record<MessageKey, string> = {
   'nav.snapshot': 'Snapshots',
   'nav.data': 'Data',
   'nav.about': 'About',
+  'nav.bookmarks': 'Bookmarks',
+  'folder.childOf': '{title} subfolders',
 
   'common.expand': 'Show',
   'common.collapse': 'Hide',
