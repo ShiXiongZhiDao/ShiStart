@@ -1571,6 +1571,10 @@ async function moveSelectedInto(request: DropRequest): Promise<void> {
     failed > 0
       ? t('home.drag.movedManyPartial', { moved, failed })
       : t('home.drag.movedMany', { n: moved, parent: parentTitle });
+  // 搬完就清空选择：批量打开、批量删除都清，唯独拖拽不清会让"操作完成"这件事
+  // 在四个动作里出现三种语义。而且书签已经不在原来的分组里，那些卡片从屏幕上消失，
+  // 勾选却留着 —— 操作栏的数字就和用户看到的东西对不上了。
+  clearSelection();
 }
 
 // ---------- 撤销「上一次改动」（既有约定 提出、既有约定 泛化） ----------

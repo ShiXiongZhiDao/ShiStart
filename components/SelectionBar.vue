@@ -39,7 +39,7 @@ const { t } = useI18n();
       <button type="button" class="ghost-btn is-danger" @click="emit('remove')">
         {{ t('home.selection.delete') }}
       </button>
-      <button type="button" class="link-btn" @click="emit('clear')">
+      <button type="button" class="ghost-btn" @click="emit('clear')">
         {{ t('home.selection.clear') }}
       </button>
     </div>
@@ -87,13 +87,15 @@ const { t } = useI18n();
   overflow-x: auto;
 }
 
+/* 四个动作共用同一种形态（都是 ghost-btn 胶囊）——「取消选择」曾经用 link-btn，
+   在一排胶囊里长得不一样，看着像漏了样式（用户截图报过）。
+   删除单独给一点颜色：它是这一条里唯一不可逆的动作，别和「打开」长得一样。 */
 .selection-actions .ghost-btn {
   height: 26px;
   flex: 0 0 auto;
   white-space: nowrap;
 }
 
-/* 删除是这一条里唯一不可逆的动作，给它一点颜色，别和「打开」长得一样。 */
 .selection-actions .is-danger {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--line-strong));
   color: var(--accent-text);
@@ -102,11 +104,6 @@ const { t } = useI18n();
 .selection-actions .is-danger:hover {
   border-color: var(--accent);
   background: var(--accent-soft);
-}
-
-.selection-actions .link-btn {
-  margin-left: var(--sp-1);
-  white-space: nowrap;
 }
 
 @media (max-width: 560px) {
