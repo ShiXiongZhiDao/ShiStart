@@ -1393,11 +1393,18 @@ async function undoLastChange(): Promise<void> {
 }
 
 /**
- * 撤销条那句 `undoBarText` 在下面；这里不再提供手动关闭的入口。
+ * 手动关掉撤销条。
  *
- * 原来有个「不用了」按钮，靠它调 `clearLastEdit`。现在条子 10 秒后自己收，
- * 手动关闭只剩"提前一点省地方"的价值，却多一个要看要点的按钮 —— 去掉。
+ * **自动收起不替代它**（既有约定 修订）：自动关是"我不看也不管，它自己会走"，
+ * 手动关是"我现在就知道不要，别再占我十秒"。这两件事不冲突 —— 少了后者，
+ * 用户明明已经决定了还要被一条没用的提示按住十秒。
+ *
+ * 关的时候连 storage 一起清：不然刷新之后它又回来，等于没关掉。
  */
+function dismissLastEdit(): void {
+  lastEdit.value = null;
+  void clearLastEdit();
+}
 
 /**
  * 撤销条的目标还在不在树里。
@@ -1878,8 +1885,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
               />
 
               <!-- 撤销「上一次改动」（既有约定 提出、既有约定 泛化）。
-                   10 秒后自动收起，不用手动点关闭；鼠标移上来或键盘 Tab 进来
-                   会暂停计时 —— 用户正要点「撤销」时它消失，比不自动收更糟。
+                   10 秒后自动收起，同时留着「不用了」手动关（既有约定 修订）：
+                   自动关是"不管它也会走"，手动关是"我现在就不要" —— 少了后者，
+                   已经决定的人还要被一条没用的提示按住十秒。
+                   鼠标移上来或键盘 Tab 进来会暂停计时 —— 用户正要点「撤销」时它消失，比不自动收更糟。
                    目标节点被删掉时按钮禁用并说明原因 —— 不让用户点一个注定失败的操作。 -->
               <div
                 v-if="lastEdit && undoRemaining > 0"
@@ -1892,6 +1901,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                 <span class="drag-undo-text">{{ undoBarText }}</span>
                 <button type="button" class="ghost-btn" :disabled="undoTargetMissing" @click="undoLastChange">
                   {{ t('home.drag.undo') }}
+                </button>
+                <button type="button" class="ghost-btn" @click="dismissLastEdit">
+                  {{ t('home.drag.dismiss') }}
                 </button>
                 <span v-if="undoTargetMissing" class="drag-undo-gone">{{ t('home.edit.undoTargetGone') }}</span>
                 <!-- 剩余时间：用 transform 而不是 width，免得每 100ms 触发布局。

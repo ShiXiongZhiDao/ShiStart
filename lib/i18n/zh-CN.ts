@@ -300,6 +300,7 @@ export const zhCN = {
     '已把「{title}」移到「{parent}」，但位置比放下时靠前一位 —— 浏览器不接受跨目录直接追加到末尾。',
   'home.drag.movedNoUndo': '已把「{title}」移到「{parent}」，但这一步没能记下来，撤销不可用。',
   'home.drag.undo': '撤销',
+  'home.drag.dismiss': '不用了',
   'home.drag.failed': '移动失败：{reason}。整理书签也可以改用浏览器书签管理器。',
   'home.drag.undoFailed': '撤销失败：{reason}',
   'home.drag.reject.unknownDragged': '这条已经不在当前书签树里了，请刷新后重试。',

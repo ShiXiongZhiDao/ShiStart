@@ -323,6 +323,7 @@ export const en: Record<MessageKey, string> = {
   'home.drag.movedNoUndo':
     'Moved “{title}” into “{parent}”, but the step could not be recorded, so undo is unavailable.',
   'home.drag.undo': 'Undo',
+  'home.drag.dismiss': 'Dismiss',
   'home.drag.failed': 'Move failed: {reason}. You can also arrange bookmarks in the browser bookmark manager.',
   'home.drag.undoFailed': 'Undo failed: {reason}',
   'home.drag.reject.unknownDragged': 'That item is no longer in the bookmark tree. Reload and try again.',
