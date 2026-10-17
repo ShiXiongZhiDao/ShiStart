@@ -30,11 +30,25 @@ export interface QrMirror {
   wechatOfficial: string;
 }
 
-/** 二维码在仓库里的目录；两边目录结构一致，只换域名。 */
-const GITHUB_DIR = 'https://raw.githubusercontent.com/ShiXiongZhiDao/ShiTab/main/public/qr';
+/**
+ * 二维码在仓库里的目录；两边目录结构一致，只换域名。
+ *
+ * **为什么在 `BrandAssets` 而不在本仓**（2026-10-17）：这几张图是「师兄知道」名下
+ * **多个插件共用**的资产（支付宝/微信收款码、公众号二维码对作者是同一套）。放在各自
+ * 仓库里等于同一张图存 N 份，换一次就得改 N 个仓库、N 次发版；单独一个资产仓则是
+ * 改一处、所有插件下次打开「关于」就生效 —— **不用发版**。
+ *
+ * 代价：多了一个外部依赖仓。它改名/删除/被风控，所有插件的「关于」页都会一起失去
+ * 二维码（失败态是"加载不出来 + 重试"，不会静默）。这是集中管理的固有代价，认下。
+ *
+ * 路径是 `images/about/`，两个平台**一致**（Gitee 的页面地址会显示成 `.../BrandAssets/about`，
+ * 那只是浏览时的简化路径，raw 必须是 `raw/main/images/about/...`，2026-10-17 实测：
+ * 少一层 `images/` 是 404）。
+ */
+const GITHUB_DIR = 'https://raw.githubusercontent.com/ShiXiongZhiDao/BrandAssets/main/images/about';
 // Gitee 的 raw 链接会 302 跳到 raw.giteeusercontent.com 的签名地址（每次请求现签），
 // 所以这里**必须写原始 URL** —— 把跳转后的地址抄下来会过期。
-const GITEE_DIR = 'https://gitee.com/ShiXiongZhiDao/ShiTab/raw/main/public/qr';
+const GITEE_DIR = 'https://gitee.com/ShiXiongZhiDao/BrandAssets/raw/main/images/about';
 
 export const QR_MIRRORS: readonly QrMirror[] = [
   {
