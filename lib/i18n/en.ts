@@ -123,7 +123,8 @@ export const en: Record<MessageKey, string> = {
   'about.title': 'About',
   'about.version': 'Version {version}',
   'about.privacy': 'Privacy',
-  'about.privacy.body': 'Bookmarks are read locally only: never uploaded, never stored, never counted. The page loads no remote scripts or fonts. Only two outbound requests happen: the WebDAV server you configure (after you enable sync), and the QR images on this page.',
+  'about.privacy.body': 'Bookmarks are read locally only: never uploaded, never stored, never counted. Only two outbound requests happen: the WebDAV server you configure (after you enable sync), and the QR images on this page.',
+  'about.privacy.more': 'Full privacy policy: ',
   'about.credits': 'About this extension',
   'about.credits.body':
     'ShiStart takes over the new tab page and shows the bookmarks you already have. Creating, renaming, moving and deleting write straight to your browser bookmarks — ' +

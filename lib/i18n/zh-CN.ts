@@ -114,7 +114,8 @@ export const zhCN = {
   'about.title': '关于',
   'about.version': '版本 {version}',
   'about.privacy': '隐私',
-  'about.privacy.body': '书签只在本机读取，不上传、不落盘、不做统计。页面不加载远程脚本与字体。对外只连两处：你自己填写的 WebDAV（开启同步后才发生），以及本页的二维码图片。',
+  'about.privacy.body': '书签只在本机读取，不上传、不落盘、不做统计。对外只连两处：你自己填写的 WebDAV（开启同步后才发生），以及本页的二维码图片。',
+  'about.privacy.more': '完整隐私政策：',
   'about.credits': '关于本扩展',
   'about.credits.body':
     '师兄起页接管浏览器新标签页，展示你已经收藏的书签。新建、重命名、移动与删除都直接写你的浏览器书签，' +

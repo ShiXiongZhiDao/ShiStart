@@ -81,6 +81,14 @@ async function resetAll(): Promise<void> {
     <section class="card">
       <h3>{{ t('about.privacy') }}</h3>
       <p class="hint">{{ t('about.privacy.body') }}</p>
+      <!-- 摘要在这、全文在那份。两个公仓各给一个链接：一个挂了还有另一个 ——
+           国内直连 GitHub 常常连不上，只留它等于给一部分人一个死入口。 -->
+      <p class="hint about-more">
+        {{ t('about.privacy.more') }}
+        <a href="https://gitee.com/ShiXiongZhiDao/ShiStart/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Gitee</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/ShiXiongZhiDao/ShiStart/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </p>
     </section>
 
     <section class="card">
@@ -236,6 +244,27 @@ async function resetAll(): Promise<void> {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent-text);
+}
+
+/* 「完整隐私政策：Gitee · GitHub」是**正文里的行内链接**，不是一排操作按钮 ——
+   所以用下划线而不是胶囊，和上面那张卡的形态区分开。 */
+.about-more {
+  margin-bottom: 0;
+}
+
+.about-more a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.about-more a:hover {
+  color: var(--accent);
+}
+
+.about-more span {
+  margin: 0 var(--sp-2);
+  color: var(--text-3);
 }
 
 .qr-row {
