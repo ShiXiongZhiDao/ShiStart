@@ -12,28 +12,69 @@
 
 ---
 
-## What it is
+## What it does
 
-A new-tab extension that puts the bookmarks you **already have** in Chrome or Edge
-onto the page.
+- **A new tab *is* your bookmarks.** Nothing to import, nothing to rebuild, no second copy: the page lays out the tree your browser already has, re-read on every open.
+- **The left side is that tree, unchanged.** Expand it level by level, jump back out through the breadcrumb; the sidebar starts collapsed, slides out when the pointer touches the left edge, and can be dragged wider.
+- **Folders with children open as groups.** One header per folder with its count, holding folder tiles or bookmark cards; a leaf folder is just a run of cards — one big folder fits on one screen.
+- **Search covers the whole library.** A bookmark outside the current folder still turns up. `Ctrl / Cmd + K` or `/` focuses the box, `Esc` clears it, and an unmatched query goes straight to your search engine.
+- **Tidy up right on the page.** New folder, rename, drag to reorder, drag to another folder, delete — all written back to the browser's own bookmarks, so there is no "which copy is right".
+- **Deleted things come back.** They wait in the trash for 30 days and restore to where they were; restoring a folder brings its bookmarks with it.
+- **Work in batches.** Select several bookmarks or folders and open, move or delete them at once — batch delete asks first.
+- **Hover the right edge** and *Recently visited* slides out. It reads the browser's own history: read-only, no copy kept, nothing uploaded.
+- **The context menu has the other ways to open.** New window, incognito window, Edge split view — or just copy the link.
+- **The interface follows you.** Two palettes × light/dark, three background patterns, 4–12 cards per row, Chinese and English — all remembered as preferences.
+- **Bring your own WebDAV for cross-device.** Nutstore, Nextcloud, a Synology box. Leave the address empty and it stays local, with no requests at all.
 
-A folder tree on the left, browsable folders on the right — folders with children
-render as groups, leaf folders lay out as bookmark cards; search matches **the whole
-library**, not just the folder you are in; hover the **right edge** and a "Recently
-visited" panel slides out, one click to open in a new tab.
+## What it is not
 
-The things that matter, up front:
+- **Not a replacement for the bookmark manager.** Duplicate hunting, dead-link checking, bulk import/export — that is filing work, and the built-in manager or a dedicated tool does it better. This one is about looking and using.
+- **No "Import bookmarks".** There is exactly one copy of your bookmarks: the browser's tree. A second write path would only create a second source of truth.
+- **No server of the author's.** No account, no telemetry. Sync means your own WebDAV.
+- **Not a speed dial.** It does not invent icons and it does not touch your bookmarks; what you see is what you saved.
+- **It does not read the sites you visit.** The only permission that touches user data is browsing history, and only to list *Recently visited*.
 
-- **It reads the browser's native bookmark tree** on every new tab. No copy is kept,
-  nothing is uploaded (unless you turn sync on — see below).
-- **Edits go straight to the native tree**: organizing bookmarks on the page — new
-  folder, rename, drag to reorder, delete — writes back to the browser's own
-  bookmarks; there is no second copy to fall out of step. Deletions land in the
-  in-extension trash first and can be restored within 30 days. **Bookmark import
-  is deliberately not offered** — that would open a second write path.
-- The UI speaks **Simplified Chinese and English**, following your browser by default.
-- Optional **WebDAV sync** keeps bookmarks and UI preferences in step across browsers.
-  Off by default; you supply the server and credentials.
+## Why I built this
+
+The browser's bookmark manager is a place to **file** things: open a dedicated page, then
+click down through the levels. The bookmarks bar is always there, but it is one row — once
+you have a dozen folders, it is a line of identical little icons.
+
+So saving a bookmark almost never leads to opening it again. You file it because it might be
+useful later, and later never comes.
+
+That is why this lives on the **new tab page**. It is the one place the browser puts in front
+of you dozens of times a day without being asked: open a tab, see your bookmarks, click one.
+
+The cost is honest: it takes over your new tab page. On first load Chrome or Edge asks
+whether to keep the change — you must click **Keep changes**, or new tabs keep using the
+browser's default page.
+
+## Why there is only one copy
+
+Most bookmark extensions build a library of their own: you import once, and from then on they
+own that copy. Every later action has to answer "which one wins".
+
+This goes the other way: **the browser's native bookmark tree is the only source**, and the
+page only displays it and edits it in place. The trade-offs are explicit:
+
+- no copy to fall out of step — editing on the page *is* editing the browser's bookmarks;
+- but **no bookmark import**, and no storing bookmarks elsewhere — that would be a second write path;
+- deletes do not vanish: they land in the trash for 30 days, and restoring writes back into the native tree, not into a copy.
+
+When you want the same tree on a second machine, that is what sync copies — the tree plus UI
+preferences — over a server you provide.
+
+## Compared with the three usual options
+
+| | Built-in manager | Bookmarks bar | ShiStart |
+| --- | --- | --- | --- |
+| When you see it | Open a dedicated page | Always there, but one row | Every new tab |
+| Hierarchy | A tree, click down | One level only | Tree + grouped layout + breadcrumb |
+| Search | Whole library | None | Whole library; in the trash, the current screen |
+| Deletes | No trash | No trash | Restorable for 30 days |
+| Where the data lives | In the browser | In the browser | In the browser; optional sync to your own WebDAV |
+| Account required | No | No | No |
 
 ## Screenshots
 
