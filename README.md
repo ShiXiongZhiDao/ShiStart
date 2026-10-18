@@ -6,7 +6,7 @@
 
 <p align="center"><a href="./README.en.md">English</a> · <strong>简体中文</strong></p>
 
-<p align="center"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT 授权"> <img src="https://img.shields.io/badge/browsers-Chrome%20%C2%B7%20Edge-blue" alt="Chrome 与 Edge"> <img src="https://img.shields.io/badge/manifest-MV3-lightgrey" alt="Manifest V3"> <img src="https://img.shields.io/badge/data-local_only-yellowgreen" alt="数据只留在本机"> <img src="https://img.shields.io/badge/store-not_published-orange" alt="还没上架商店"></p>
+<p align="center"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT 授权"> <img src="https://img.shields.io/badge/browsers-Chrome%20%C2%B7%20Edge-blue" alt="Chrome 与 Edge"> <img src="https://img.shields.io/badge/manifest-MV3-lightgrey" alt="Manifest V3"> <img src="https://img.shields.io/badge/data-local_only-yellowgreen" alt="数据只留在本机"> <img src="https://img.shields.io/badge/store-Chrome_Web_Store-green" alt="已上架 Chrome 应用商店"></p>
 
 <p align="center"><img src="assets/screenshots/zh/home-sidebar.png" alt="主页：左边是书签目录树，右边按文件夹把卡片铺开" width="920"></p>
 
@@ -137,7 +137,9 @@
 
 ## 怎么装上
 
-商店版本还在准备。在那之前：
+**最省事**：Chrome 应用商店里搜「师兄起页」，装完即用。
+
+**要装最新一版**（商店审核有延迟，Releases 里的安装包永远是最新那一版）：
 
 1. 从本仓库的 Releases 下载 `shistart-<版本>-chrome.zip`，解压到一个**以后会留着**的目录
    （扩展会一直读那个目录，删了它就失效了）。
@@ -147,8 +149,8 @@
 4. Chrome 弹出「已替换新标签页，是否保留此更改」时，**必须点「保留更改」**，
    否则新标签页仍旧走浏览器默认页。
 
-> Chrome 会不时提示「请停用以开发者模式运行的扩展程序」。那是浏览器对所有未上架扩展的
-> 固定行为，不是本扩展的问题 —— 上架商店之后就没有了。
+> Chrome 会不时提示「请停用以开发者模式运行的扩展程序」。那是浏览器对**开发者模式
+> 加载**的固定行为，不是本扩展的问题 —— 从商店装的不会看到它。
 
 ## 常见问题
 
@@ -189,7 +191,7 @@ Chrome 138 起，新标签页被扩展接管时，Chrome 会在页面底部插�
 ```bash
 pnpm install     # 装依赖（pnpm 11）
 pnpm build       # 构建到 .output/chrome-mv3
-pnpm zip         # 打成商店上传用的 zip
+pnpm zip         # 打成安装包（发版流水线会自动提交商店审核）
 ```
 
 然后照上面「怎么装上」从第 2 步起，把 `.output/chrome-mv3` 当未打包目录加载进去。

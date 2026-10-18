@@ -6,7 +6,7 @@
 
 <p align="center"><strong>English</strong> · <a href="./README.md">简体中文</a></p>
 
-<p align="center"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT licensed"> <img src="https://img.shields.io/badge/browsers-Chrome%20%C2%B7%20Edge-blue" alt="Chrome and Edge"> <img src="https://img.shields.io/badge/manifest-MV3-lightgrey" alt="Manifest V3"> <img src="https://img.shields.io/badge/data-local_only-yellowgreen" alt="Local only"> <img src="https://img.shields.io/badge/store-not_published-orange" alt="Not on any store yet"></p>
+<p align="center"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT licensed"> <img src="https://img.shields.io/badge/browsers-Chrome%20%C2%B7%20Edge-blue" alt="Chrome and Edge"> <img src="https://img.shields.io/badge/manifest-MV3-lightgrey" alt="Manifest V3"> <img src="https://img.shields.io/badge/data-local_only-yellowgreen" alt="Local only"> <img src="https://img.shields.io/badge/store-Chrome_Web_Store-green" alt="On the Chrome Web Store"></p>
 
 <p align="center"><img src="assets/screenshots/en/home.png" alt="The home page: folders laid out as groups and bookmark cards" width="920"></p>
 
@@ -150,7 +150,10 @@ for that origin at runtime, and asks for nothing if you never fill it in.
 
 ## How to install
 
-The store release is still in preparation. Until then:
+**Easiest**: search "ShiStart" on the Chrome Web Store and install from there.
+
+**To get the newest build** (store review adds delay; the zip in Releases is always
+the latest):
 
 1. Download `shistart-<version>-chrome.zip` from this repository's Releases and unzip it
    into a directory **you intend to keep** — the extension reads that directory
@@ -162,8 +165,8 @@ The store release is still in preparation. Until then:
    otherwise new tabs keep using the browser's default page.
 
 > Chrome will occasionally show "Please disable extensions running in developer mode".
-> That is the browser's standing behaviour for any extension that is not on the store,
-> not a fault of this one — it goes away once the store listing is live.
+> That is the browser's standing behaviour for extensions **loaded unpacked**,
+> not a fault of this one — installs from the store never see it.
 
 ## FAQ
 
@@ -209,7 +212,7 @@ Yes — Settings → Data exports bookmarks (HTML / JSON) and a settings backup.
 ```bash
 pnpm install     # install dependencies (pnpm 11)
 pnpm build       # build into .output/chrome-mv3
-pnpm zip         # package a zip for store upload
+pnpm zip         # package the zip (the release pipeline submits it to the stores)
 ```
 
 Then follow step 2 of "How to install" above, loading `.output/chrome-mv3` as the
