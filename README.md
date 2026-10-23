@@ -12,6 +12,16 @@
 
 ---
 
+## 安装
+
+- **Chrome** —— [Chrome 应用商店](https://chromewebstore.google.com/detail/goaolldhlbkeefonpmnglcfdhdhapocp)
+- **Edge** —— [Edge 加载项商店](https://microsoftedge.microsoft.com/addons/detail/cgmdomphimhgbbmaahhlmoblmjceipel)
+- **要自己拿包** —— 从 Releases 下 zip，或者自己构建；两者加载步骤相同，见下面「从源码构建」
+
+商店版只改一件事：以后是浏览器替你装更新。权限、要不要钱、读哪一份书签，和 zip 版
+完全一样 —— 商店里那个扩展不是另一个程序。唯一的差别是**扩展 ID 由商店分配**，所以
+从 zip 版换过去时本地偏好不跟着走（跨设备同步用你自己的 WebDAV，不受影响）。
+
 ## 它能做什么
 
 - **开一个新标签页，就是你的书签。** 不导入、不新建、不复制：页面上铺的就是浏览器里那棵树，每次打开实时读一遍。
@@ -135,26 +145,6 @@
 
 同步用的服务器地址是**你自己填的**，扩展按最小来源在运行时申请权限；不填就不申请。
 
-## 怎么装上
-
-**最省事**：从商店装，装完即用 ——
-
-- [Chrome 应用商店](https://chromewebstore.google.com/detail/goaolldhlbkeefonpmnglcfdhdhapocp)
-- [Edge 加载项](https://microsoftedge.microsoft.com/addons/detail/cgmdomphimhgbbmaahhlmoblmjceipel)
-
-**要装最新一版**（商店审核有延迟，Releases 里的安装包永远是最新那一版）：
-
-1. 从本仓库的 Releases 下载 `shistart-<版本>-chrome.zip`，解压到一个**以后会留着**的目录
-   （扩展会一直读那个目录，删了它就失效了）。
-2. Edge 打开 `edge://extensions`、Chrome 打开 `chrome://extensions`，打开右上/右下角的
-   **开发者模式**。
-3. 点「加载未打包的扩展程序」，选中解压出来的目录。
-4. Chrome 弹出「已替换新标签页，是否保留此更改」时，**必须点「保留更改」**，
-   否则新标签页仍旧走浏览器默认页。
-
-> Chrome 会不时提示「请停用以开发者模式运行的扩展程序」。那是浏览器对**开发者模式
-> 加载**的固定行为，不是本扩展的问题 —— 从商店装的不会看到它。
-
 ## 常见问题
 
 **底部那条「师兄起页 - 书签主页 / 自定义 Chrome」是什么？**
@@ -197,8 +187,19 @@ pnpm build       # 构建到 .output/chrome-mv3
 pnpm zip         # 打成安装包（发版流水线会自动提交商店审核）
 ```
 
-然后照上面「怎么装上」从第 2 步起，把 `.output/chrome-mv3` 当未打包目录加载进去。
 `pnpm compile` 是类型检查，`pnpm test` 是纯函数单测。
+
+**加载**（Releases 里的 zip 与自己 build 出来的目录，同一套步骤）：
+
+1. 解压 / 构建产物放到一个**以后会留着**的地方 —— 扩展一直读那个目录，删了或在文件
+   管理器里挪走，它就失效了（`.output/chrome-mv3` 同理，别在 `pnpm clean` 之后还指望它）。
+2. Edge 打开 `edge://extensions`、Chrome 打开 `chrome://extensions`，打开**开发者模式**。
+3. 点「加载未打包的扩展程序」，选中那个目录。
+4. Chrome 弹出「已替换新标签页，是否保留此更改」时，**必须点「保留更改」**，
+   否则新标签页仍旧走浏览器默认页。
+
+> Chrome 会不时提示「请停用以开发者模式运行的扩展程序」。那是浏览器对**开发者模式
+> 加载**的固定行为，不是本扩展的问题 —— 从商店装的不会看到它。
 
 ## 更新记录
 

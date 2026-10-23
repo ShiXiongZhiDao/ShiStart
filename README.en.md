@@ -12,6 +12,18 @@
 
 ---
 
+## Install
+
+- **Chrome** — [Chrome Web Store](https://chromewebstore.google.com/detail/goaolldhlbkeefonpmnglcfdhdhapocp)
+- **Edge** — [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/cgmdomphimhgbbmaahhlmoblmjceipel)
+- **Want the package yourself** — grab the zip from Releases, or build it; the loading steps are the same, under "Build from source" below.
+
+The store build changes exactly one thing: your browser installs updates for you. Same
+permissions, same price (free), the same one bookmark tree — the extension behind the store
+listing is not a different program. The one real difference is that **the extension ID is
+assigned by the store**, so local preferences do not carry over from a zip install
+(cross-device sync through your own WebDAV is unaffected).
+
 ## What it does
 
 - **A new tab *is* your bookmarks.** Nothing to import, nothing to rebuild, no second copy: the page lays out the tree your browser already has, re-read on every open.
@@ -148,29 +160,6 @@ change site data" in the extension menu — that is the expected state.
 The WebDAV address is **one you type yourself**; the extension requests permission
 for that origin at runtime, and asks for nothing if you never fill it in.
 
-## How to install
-
-**Easiest**: install from a store and you are done —
-
-- [Chrome Web Store](https://chromewebstore.google.com/detail/goaolldhlbkeefonpmnglcfdhdhapocp)
-- [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/cgmdomphimhgbbmaahhlmoblmjceipel)
-
-**To get the newest build** (store review adds delay; the zip in Releases is always
-the latest):
-
-1. Download `shistart-<version>-chrome.zip` from this repository's Releases and unzip it
-   into a directory **you intend to keep** — the extension reads that directory
-   permanently, and deleting it breaks the install.
-2. Open `edge://extensions` (Edge) or `chrome://extensions` (Chrome) and enable
-   **Developer mode**.
-3. Click **Load unpacked** and select the unzipped directory.
-4. When Chrome asks "Keep this change?" about the new tab, **click Keep changes** —
-   otherwise new tabs keep using the browser's default page.
-
-> Chrome will occasionally show "Please disable extensions running in developer mode".
-> That is the browser's standing behaviour for extensions **loaded unpacked**,
-> not a fault of this one — installs from the store never see it.
-
 ## FAQ
 
 **What is the "ShiStart / Customize Chrome" bar at the bottom?**
@@ -218,9 +207,22 @@ pnpm build       # build into .output/chrome-mv3
 pnpm zip         # package the zip (the release pipeline submits it to the stores)
 ```
 
-Then follow step 2 of "How to install" above, loading `.output/chrome-mv3` as the
-unpacked directory. `pnpm compile` runs the type check and `pnpm test` the pure-function
-unit tests.
+`pnpm compile` runs the type check and `pnpm test` the pure-function unit tests.
+
+**Loading** (the zip in Releases and your own build use the same steps):
+
+1. Put the unzipped / built directory somewhere **you intend to keep** — the extension
+   reads that directory permanently; delete it, or move it in your file manager, and the
+   install breaks (`.output/chrome-mv3` included — don't count on it surviving `pnpm clean`).
+2. Open `edge://extensions` (Edge) or `chrome://extensions` (Chrome) and enable
+   **Developer mode**.
+3. Click **Load unpacked** and select that directory.
+4. When Chrome asks "Keep this change?" about the new tab, **click Keep changes** —
+   otherwise new tabs keep using the browser's default page.
+
+> Chrome will occasionally show "Please disable extensions running in developer mode".
+> That is the browser's standing behaviour for extensions **loaded unpacked**,
+> not a fault of this one — installs from the store never see it.
 
 ## Changelog
 
