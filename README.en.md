@@ -6,7 +6,7 @@
 
 <p align="center"><strong>English</strong> · <a href="./README.md">简体中文</a></p>
 
-<p align="center"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT licensed"> <img src="https://img.shields.io/badge/browsers-Chrome%20%C2%B7%20Edge-blue" alt="Chrome and Edge"> <img src="https://img.shields.io/badge/manifest-MV3-lightgrey" alt="Manifest V3"> <img src="https://img.shields.io/badge/data-local_only-yellowgreen" alt="Local only"> <img src="https://img.shields.io/badge/store-Chrome_Web_Store-green" alt="On the Chrome Web Store"></p>
+<p align="center"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT licensed"> <img src="https://img.shields.io/badge/browsers-Chrome%20%C2%B7%20Edge-blue" alt="Chrome and Edge"> <img src="https://img.shields.io/badge/manifest-MV3-lightgrey" alt="Manifest V3"> <img src="https://img.shields.io/badge/data-local_only-yellowgreen" alt="Local only"> <a href="https://chromewebstore.google.com/detail/goaolldhlbkeefonpmnglcfdhdhapocp"><img src="https://img.shields.io/badge/store-Chrome_Web_Store-green" alt="On the Chrome Web Store"></a> <a href="https://microsoftedge.microsoft.com/addons/detail/cgmdomphimhgbbmaahhlmoblmjceipel"><img src="https://img.shields.io/badge/store-Edge_Add--ons-green" alt="On Edge Add-ons"></a></p>
 
 <p align="center"><img src="assets/screenshots/en/home.png" alt="The home page: folders laid out as groups and bookmark cards" width="920"></p>
 
@@ -150,7 +150,10 @@ for that origin at runtime, and asks for nothing if you never fill it in.
 
 ## How to install
 
-**Easiest**: search "ShiStart" on the Chrome Web Store and install from there.
+**Easiest**: install from a store and you are done —
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/goaolldhlbkeefonpmnglcfdhdhapocp)
+- [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/cgmdomphimhgbbmaahhlmoblmjceipel)
 
 **To get the newest build** (store review adds delay; the zip in Releases is always
 the latest):

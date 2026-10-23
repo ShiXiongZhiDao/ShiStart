@@ -6,7 +6,7 @@
 
 <p align="center"><a href="./README.en.md">English</a> · <strong>简体中文</strong></p>
 
-<p align="center"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT 授权"> <img src="https://img.shields.io/badge/browsers-Chrome%20%C2%B7%20Edge-blue" alt="Chrome 与 Edge"> <img src="https://img.shields.io/badge/manifest-MV3-lightgrey" alt="Manifest V3"> <img src="https://img.shields.io/badge/data-local_only-yellowgreen" alt="数据只留在本机"> <img src="https://img.shields.io/badge/store-Chrome_Web_Store-green" alt="已上架 Chrome 应用商店"></p>
+<p align="center"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT 授权"> <img src="https://img.shields.io/badge/browsers-Chrome%20%C2%B7%20Edge-blue" alt="Chrome 与 Edge"> <img src="https://img.shields.io/badge/manifest-MV3-lightgrey" alt="Manifest V3"> <img src="https://img.shields.io/badge/data-local_only-yellowgreen" alt="数据只留在本机"> <a href="https://chromewebstore.google.com/detail/goaolldhlbkeefonpmnglcfdhdhapocp"><img src="https://img.shields.io/badge/store-Chrome_Web_Store-green" alt="已上架 Chrome 应用商店"></a> <a href="https://microsoftedge.microsoft.com/addons/detail/cgmdomphimhgbbmaahhlmoblmjceipel"><img src="https://img.shields.io/badge/store-Edge_Add--ons-green" alt="已上架 Edge 加载项"></a></p>
 
 <p align="center"><img src="assets/screenshots/zh/home-sidebar.png" alt="主页：左边是书签目录树，右边按文件夹把卡片铺开" width="920"></p>
 
@@ -137,7 +137,10 @@
 
 ## 怎么装上
 
-**最省事**：Chrome 应用商店里搜「师兄起页」，装完即用。
+**最省事**：从商店装，装完即用 ——
+
+- [Chrome 应用商店](https://chromewebstore.google.com/detail/goaolldhlbkeefonpmnglcfdhdhapocp)
+- [Edge 加载项](https://microsoftedge.microsoft.com/addons/detail/cgmdomphimhgbbmaahhlmoblmjceipel)
 
 **要装最新一版**（商店审核有延迟，Releases 里的安装包永远是最新那一版）：
 
